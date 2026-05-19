@@ -1,0 +1,1818 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>ALMATIN — Radiation Infrastructure Engineering</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400;500;600&family=Fraunces:ital,opsz,wght@1,144,300;1,144,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink-0:#06080c;
+  --ink-1:#0a0d13;
+  --ink-2:#0f141c;
+  --ink-3:#141a24;
+  --ink-4:#1c2330;
+  --line:rgba(255,255,255,0.06);
+  --line-2:rgba(255,255,255,0.12);
+  --line-bright:rgba(77,212,232,0.35);
+  --text:#e6ecf3;
+  --text-2:#a7b3c2;
+  --text-3:#67768a;
+  --cyan:#4dd4e8;
+  --cyan-deep:#1a8a99;
+  --amber:#ff8a4c;
+  --hot:#ff4d4d;
+  --warn:#ffb84d;
+  --ok:#5ee0a0;
+  --serif:'Fraunces',serif;
+  --sans:'IBM Plex Sans',ui-sans-serif,system-ui,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--ink-0);color:var(--text);font-family:var(--sans);font-weight:300;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;letter-spacing:0.005em}
+body{overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+input,select{font:inherit}
+
+/* ===== GRID BACKGROUND ===== */
+.grid-bg{position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    linear-gradient(rgba(77,212,232,0.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(77,212,232,0.025) 1px,transparent 1px);
+  background-size:60px 60px;
+  mask-image:radial-gradient(ellipse at 50% 30%,#000 0%,transparent 80%);
+}
+.noise{position:fixed;inset:0;pointer-events:none;z-index:1;opacity:0.035;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+
+/* ===== HUD MARGIN ===== */
+.shell{position:relative;z-index:2;max-width:1480px;margin:0 auto;padding:0 32px}
+@media(max-width:720px){.shell{padding:0 18px}}
+
+/* ===== NAV ===== */
+nav.top{position:fixed;top:0;left:0;right:0;z-index:50;backdrop-filter:blur(18px) saturate(140%);
+  background:linear-gradient(180deg,rgba(6,8,12,0.85),rgba(6,8,12,0.55));
+  border-bottom:1px solid var(--line)}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;padding:16px 32px;max-width:1480px;margin:0 auto}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-mark{width:32px;height:32px;position:relative}
+.logo-mark svg{width:100%;height:100%}
+.logo-text{font-family:var(--sans);font-weight:600;letter-spacing:0.22em;font-size:14px}
+.logo-sub{font-family:var(--mono);font-size:9px;color:var(--text-3);letter-spacing:0.18em;margin-top:2px}
+.nav-links{display:flex;gap:34px;font-family:var(--mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-2)}
+.nav-links a{position:relative;padding:6px 0;transition:color .2s}
+.nav-links a:hover{color:var(--cyan)}
+.nav-links a::after{content:"";position:absolute;left:0;bottom:0;width:0;height:1px;background:var(--cyan);transition:width .3s}
+.nav-links a:hover::after{width:100%}
+.nav-cta{display:flex;align-items:center;gap:14px}
+.status-pill{display:flex;align-items:center;gap:8px;padding:6px 12px;border:1px solid var(--line-2);border-radius:2px;
+  font-family:var(--mono);font-size:10px;letter-spacing:0.1em;color:var(--text-2)}
+.status-pill .dot{width:6px;height:6px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.btn{display:inline-flex;align-items:center;gap:10px;padding:11px 18px;font-family:var(--mono);font-size:11px;letter-spacing:0.14em;text-transform:uppercase;
+  border:1px solid var(--cyan);color:var(--cyan);background:rgba(77,212,232,0.04);transition:all .25s;cursor:pointer}
+.btn:hover{background:var(--cyan);color:var(--ink-0)}
+.btn.ghost{border-color:var(--line-2);color:var(--text-2);background:transparent}
+.btn.ghost:hover{border-color:var(--text);color:var(--text);background:rgba(255,255,255,0.02)}
+.btn .arrow{font-family:var(--mono);transition:transform .25s}
+.btn:hover .arrow{transform:translateX(3px)}
+@media(max-width:980px){.nav-links,.status-pill{display:none}}
+
+/* ===== SECTION HEADER ===== */
+.section{padding:140px 0;position:relative}
+@media(max-width:720px){.section{padding:80px 0}}
+.eyebrow{display:inline-flex;align-items:center;gap:12px;font-family:var(--mono);font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:var(--cyan);margin-bottom:24px}
+.eyebrow::before{content:"";width:24px;height:1px;background:var(--cyan)}
+.eyebrow .id{color:var(--text-3)}
+h1,h2,h3{font-weight:300;line-height:1.05;letter-spacing:-0.02em}
+.h-display{font-size:clamp(48px,7vw,104px);font-weight:300;line-height:0.96;letter-spacing:-0.035em}
+.h-display em{font-family:var(--serif);font-style:italic;font-weight:300;color:var(--cyan)}
+h2.h-section{font-size:clamp(36px,4.4vw,64px);font-weight:300;letter-spacing:-0.025em;max-width:920px}
+h2.h-section em{font-family:var(--serif);font-style:italic;font-weight:300;color:var(--text-2)}
+.lede{font-size:18px;line-height:1.55;color:var(--text-2);max-width:640px;font-weight:300}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-3)}
+
+/* ===== HERO ===== */
+.hero{min-height:100vh;padding-top:120px;padding-bottom:80px;position:relative;display:flex;flex-direction:column;justify-content:space-between}
+.hero-glow{position:absolute;top:-200px;right:-200px;width:900px;height:900px;
+  background:radial-gradient(circle,rgba(77,212,232,0.10),transparent 60%);
+  pointer-events:none;z-index:0}
+.hero-glow2{position:absolute;bottom:0;left:-200px;width:700px;height:700px;
+  background:radial-gradient(circle,rgba(255,138,76,0.06),transparent 60%);
+  pointer-events:none;z-index:0}
+.hero-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:60px;align-items:center;position:relative;z-index:2}
+@media(max-width:1100px){.hero-grid{grid-template-columns:1fr;gap:40px}}
+.hero-left{position:relative}
+.hero-meta{display:flex;gap:24px;margin-bottom:36px;font-family:var(--mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-3)}
+.hero-meta span{position:relative;padding-left:14px}
+.hero-meta span::before{content:"";position:absolute;left:0;top:50%;width:6px;height:6px;border:1px solid var(--cyan);transform:translateY(-50%) rotate(45deg)}
+.hero h1{margin-bottom:32px}
+.hero-sub{font-size:19px;line-height:1.55;color:var(--text-2);max-width:560px;margin-bottom:48px;font-weight:300}
+.hero-cta{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:48px}
+.hero-cta .btn.primary{background:var(--cyan);color:var(--ink-0);border-color:var(--cyan)}
+.hero-cta .btn.primary:hover{background:#7ee5f3;border-color:#7ee5f3}
+.hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;padding-top:32px;border-top:1px solid var(--line)}
+.stat .num{font-family:var(--mono);font-size:28px;font-weight:400;color:var(--text);letter-spacing:-0.01em}
+.stat .lbl{font-family:var(--mono);font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-3);margin-top:6px}
+.stat .num .u{color:var(--cyan);font-size:14px;margin-left:3px}
+
+/* ===== HERO VIZ ===== */
+.hero-viz{position:relative;aspect-ratio:1.05/1;background:linear-gradient(135deg,rgba(15,20,28,0.6),rgba(10,13,19,0.9));
+  border:1px solid var(--line-2);overflow:hidden}
+.hero-viz::before{content:"";position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(77,212,232,0.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(77,212,232,0.04) 1px,transparent 1px);
+  background-size:20px 20px;pointer-events:none;z-index:1}
+.viz-corners{position:absolute;inset:0;pointer-events:none;z-index:5}
+.viz-corners > div{position:absolute;width:14px;height:14px;border:1px solid var(--cyan)}
+.viz-corners .tl{top:10px;left:10px;border-right:none;border-bottom:none}
+.viz-corners .tr{top:10px;right:10px;border-left:none;border-bottom:none}
+.viz-corners .bl{bottom:10px;left:10px;border-right:none;border-top:none}
+.viz-corners .br{bottom:10px;right:10px;border-left:none;border-top:none}
+.viz-readout{position:absolute;z-index:4;font-family:var(--mono);font-size:10px;letter-spacing:0.1em;color:var(--text-2);background:rgba(6,8,12,0.7);backdrop-filter:blur(6px);padding:8px 12px;border:1px solid var(--line-2)}
+.viz-readout .k{color:var(--text-3);text-transform:uppercase;font-size:9px;letter-spacing:0.16em;display:block;margin-bottom:3px}
+.viz-readout .v{color:var(--cyan);font-size:13px}
+.viz-readout.tl{top:18px;left:18px}
+.viz-readout.tr{top:18px;right:18px}
+.viz-readout.bl{bottom:18px;left:18px}
+.viz-readout.br{bottom:18px;right:18px}
+.hero-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:3}
+.hero-svg{position:absolute;inset:0;width:100%;height:100%;z-index:2}
+.live-tag{position:absolute;top:18px;left:50%;transform:translateX(-50%);z-index:5;
+  display:flex;align-items:center;gap:8px;padding:5px 11px;background:rgba(255,77,77,0.12);border:1px solid rgba(255,77,77,0.4);
+  font-family:var(--mono);font-size:9px;letter-spacing:0.2em;color:var(--hot);text-transform:uppercase}
+.live-tag .blink{width:6px;height:6px;background:var(--hot);border-radius:50%;animation:pulse 1.2s infinite}
+
+.scroll-cue{display:flex;align-items:center;gap:14px;font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:var(--text-3);text-transform:uppercase;margin-top:60px}
+.scroll-cue .line{width:80px;height:1px;background:linear-gradient(90deg,var(--text-3),transparent)}
+
+/* ===== CAPABILITY STRIP ===== */
+.cap-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-top:80px}
+@media(max-width:980px){.cap-strip{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:540px){.cap-strip{grid-template-columns:1fr}}
+.cap{padding:36px 28px;border-right:1px solid var(--line);position:relative;transition:background .3s;cursor:pointer}
+.cap:last-child{border-right:none}
+.cap:hover{background:rgba(77,212,232,0.03)}
+.cap .num{font-family:var(--mono);font-size:11px;color:var(--text-3);letter-spacing:0.16em;margin-bottom:18px}
+.cap .ico{width:48px;height:48px;margin-bottom:18px;color:var(--cyan)}
+.cap .ico svg{width:100%;height:100%;stroke:currentColor;stroke-width:1;fill:none}
+.cap h3{font-size:18px;font-weight:400;margin-bottom:8px;letter-spacing:-0.005em}
+.cap p{font-size:13px;color:var(--text-3);line-height:1.5}
+.cap .more{position:absolute;bottom:24px;right:24px;font-family:var(--mono);font-size:12px;color:var(--cyan);opacity:0;transition:opacity .3s}
+.cap:hover .more{opacity:1}
+
+/* ===== SIMULATION SECTION ===== */
+.sim-wrap{display:grid;grid-template-columns:1.2fr 1fr;gap:40px;margin-top:64px;align-items:start}
+@media(max-width:1100px){.sim-wrap{grid-template-columns:1fr}}
+.sim-stage{position:relative;aspect-ratio:1.25/1;background:linear-gradient(135deg,#0c1118,#080b10);border:1px solid var(--line-2);overflow:hidden}
+.sim-stage::before{content:"";position:absolute;inset:0;
+  background-image:linear-gradient(rgba(77,212,232,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(77,212,232,0.05) 1px,transparent 1px);
+  background-size:24px 24px;pointer-events:none}
+.sim-svg{position:absolute;inset:0;width:100%;height:100%;z-index:2}
+.sim-readouts{position:absolute;left:18px;top:18px;display:flex;flex-direction:column;gap:8px;z-index:5;font-family:var(--mono);font-size:10px}
+.sim-readouts .row{display:flex;align-items:center;gap:8px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.12em}
+.sim-readouts .row .val{color:var(--cyan);font-size:11px;letter-spacing:0.05em;text-transform:none}
+.sim-legend{position:absolute;right:18px;top:18px;z-index:5;background:rgba(6,8,12,0.65);backdrop-filter:blur(6px);border:1px solid var(--line-2);padding:10px 12px;font-family:var(--mono);font-size:9px;color:var(--text-2);text-transform:uppercase;letter-spacing:0.12em}
+.sim-legend .scale{display:flex;align-items:center;gap:6px;margin-top:6px}
+.sim-legend .bar{width:90px;height:6px;background:linear-gradient(90deg,#1a8a99,#4dd4e8,#ffb84d,#ff8a4c,#ff4d4d)}
+.sim-legend .ends{display:flex;justify-content:space-between;margin-top:4px;color:var(--text-3);font-size:8px}
+
+.sim-controls{display:flex;flex-direction:column;gap:6px}
+.sim-controls h3{font-size:24px;font-weight:300;margin-bottom:6px;letter-spacing:-0.01em}
+.sim-controls .ctrl-desc{font-size:13px;color:var(--text-3);margin-bottom:24px;line-height:1.55}
+.ctrl{padding:18px 0;border-bottom:1px solid var(--line)}
+.ctrl-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px}
+.ctrl-head .lbl{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:0.14em;color:var(--text-2)}
+.ctrl-head .val{font-family:var(--mono);font-size:14px;color:var(--cyan)}
+.ctrl-head .val .u{color:var(--text-3);font-size:11px;margin-left:3px}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;background:var(--ink-4);outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:14px;height:14px;background:var(--cyan);border:2px solid var(--ink-0);box-shadow:0 0 0 1px var(--cyan);cursor:pointer;border-radius:0;transform:rotate(45deg)}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;background:var(--cyan);border:2px solid var(--ink-0);box-shadow:0 0 0 1px var(--cyan);cursor:pointer;border-radius:0;transform:rotate(45deg)}
+.toggle-row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.toggle{padding:8px 12px;font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;border:1px solid var(--line-2);color:var(--text-3);background:transparent;cursor:pointer;transition:all .2s}
+.toggle.on{border-color:var(--cyan);color:var(--cyan);background:rgba(77,212,232,0.06)}
+.toggle:hover{border-color:var(--line-bright);color:var(--text)}
+
+.sim-output{margin-top:28px;padding:24px;border:1px solid var(--line-2);background:linear-gradient(135deg,rgba(15,20,28,0.6),rgba(10,13,19,0.3))}
+.sim-output .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.sim-output .header .ttl{font-family:var(--mono);font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-2)}
+.compliance-badge{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;padding:5px 10px;border:1px solid var(--ok);color:var(--ok);background:rgba(94,224,160,0.06)}
+.compliance-badge.warn{border-color:var(--warn);color:var(--warn);background:rgba(255,184,77,0.06)}
+.compliance-badge.fail{border-color:var(--hot);color:var(--hot);background:rgba(255,77,77,0.06)}
+.compliance-badge .dot{width:6px;height:6px;border-radius:50%;background:currentColor;box-shadow:0 0 6px currentColor}
+.sim-metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.sm{padding:14px;background:rgba(6,8,12,0.5);border:1px solid var(--line)}
+.sm .k{font-family:var(--mono);font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px}
+.sm .v{font-family:var(--mono);font-size:22px;color:var(--text);letter-spacing:-0.01em}
+.sm .v .u{font-size:11px;color:var(--text-3);margin-left:3px}
+.sm .delta{font-family:var(--mono);font-size:10px;color:var(--ok);margin-top:4px}
+.sm .delta.bad{color:var(--hot)}
+
+/* ===== CASE STUDIES ===== */
+.case-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:64px}
+@media(max-width:1100px){.case-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:720px){.case-grid{grid-template-columns:1fr}}
+.case{border:1px solid var(--line);background:linear-gradient(180deg,rgba(15,20,28,0.5),rgba(10,13,19,0.3));overflow:hidden;transition:border-color .3s,transform .3s}
+.case:hover{border-color:var(--line-bright);transform:translateY(-2px)}
+.case-viz{aspect-ratio:1.5/1;position:relative;overflow:hidden;background:#0a0d13;border-bottom:1px solid var(--line)}
+.case-viz svg{width:100%;height:100%;display:block}
+.case-viz .ab-line{position:absolute;top:0;bottom:0;width:1px;background:var(--cyan);box-shadow:0 0 8px var(--cyan);cursor:ew-resize;z-index:5}
+.case-viz .ab-handle{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:28px;height:28px;border-radius:50%;background:var(--ink-0);border:1px solid var(--cyan);display:flex;align-items:center;justify-content:center;color:var(--cyan);font-family:var(--mono);font-size:14px}
+.case-viz .ab-label{position:absolute;top:10px;font-family:var(--mono);font-size:9px;letter-spacing:0.18em;text-transform:uppercase;padding:3px 8px;background:rgba(6,8,12,0.8);border:1px solid var(--line-2)}
+.case-viz .ab-label.before{left:10px;color:var(--hot)}
+.case-viz .ab-label.after{right:10px;color:var(--ok)}
+.case-meta{padding:22px 22px 8px;display:flex;justify-content:space-between;align-items:baseline}
+.case-meta .id{font-family:var(--mono);font-size:10px;color:var(--text-3);letter-spacing:0.16em}
+.case-meta .tag{font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:0.12em;text-transform:uppercase}
+.case h3{padding:0 22px;font-size:20px;font-weight:400;margin-bottom:8px;letter-spacing:-0.005em}
+.case .sub{padding:0 22px;font-size:13px;color:var(--text-3);margin-bottom:18px}
+.case-metrics{padding:16px 22px;border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.cm .k{font-family:var(--mono);font-size:9px;color:var(--text-3);letter-spacing:0.14em;text-transform:uppercase;margin-bottom:4px}
+.cm .v{font-family:var(--mono);font-size:15px;color:var(--text)}
+.cm .v.hot{color:var(--hot)}
+.cm .v.ok{color:var(--ok)}
+
+/* ===== CALCULATOR ===== */
+.calc-wrap{display:grid;grid-template-columns:1fr 1.2fr;gap:40px;margin-top:64px;align-items:start}
+@media(max-width:1100px){.calc-wrap{grid-template-columns:1fr}}
+.calc-form{display:flex;flex-direction:column;gap:0}
+.field{padding:16px 0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:center}
+.field label{font-family:var(--mono);font-size:11px;color:var(--text-2);letter-spacing:0.14em;text-transform:uppercase}
+.field input,.field select{background:transparent;border:none;border-bottom:1px solid var(--line-2);padding:6px 0;color:var(--text);font-family:var(--mono);font-size:14px;outline:none;transition:border-color .2s}
+.field input:focus,.field select:focus{border-color:var(--cyan)}
+.field select{cursor:pointer}
+.field select option{background:var(--ink-2);color:var(--text)}
+.calc-output{position:relative;padding:32px;background:linear-gradient(135deg,rgba(15,20,28,0.6),rgba(10,13,19,0.4));border:1px solid var(--line-2)}
+.calc-output::before{content:"OUTPUT";position:absolute;top:-1px;left:-1px;padding:5px 10px;font-family:var(--mono);font-size:9px;color:var(--cyan);letter-spacing:0.2em;background:var(--ink-0);border:1px solid var(--cyan)}
+.calc-output h4{font-family:var(--mono);font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-3);margin:24px 0 16px}
+.calc-output h4:first-of-type{margin-top:12px}
+.wall-stack{display:flex;flex-direction:column;gap:2px;margin-bottom:18px}
+.layer{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;padding:8px 0;font-family:var(--mono);font-size:12px}
+.layer .sw{width:48px;height:18px}
+.layer .name{color:var(--text)}
+.layer .thick{color:var(--cyan)}
+.attn-graph{height:120px;margin-top:14px;position:relative}
+.attn-graph svg{width:100%;height:100%}
+.rec-summary{display:flex;align-items:center;justify-content:space-between;padding:18px;background:rgba(77,212,232,0.04);border:1px solid var(--cyan);margin-bottom:18px}
+.rec-summary .k{font-family:var(--mono);font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-2)}
+.rec-summary .v{font-family:var(--mono);font-size:22px;color:var(--cyan)}
+
+/* ===== PET/CT NEUTRON ===== */
+.pet-wrap{display:grid;grid-template-columns:1fr 1.1fr;gap:60px;margin-top:64px;align-items:center}
+@media(max-width:1100px){.pet-wrap{grid-template-columns:1fr}}
+.pet-text h2{margin-bottom:24px}
+.pet-text .lede{margin-bottom:32px}
+.feat-list{list-style:none;display:flex;flex-direction:column;gap:1px;background:var(--line)}
+.feat-list li{background:var(--ink-0);padding:18px 20px;display:flex;gap:18px;align-items:flex-start}
+.feat-list li .marker{font-family:var(--mono);font-size:11px;color:var(--cyan);letter-spacing:0.1em;flex-shrink:0;width:48px}
+.feat-list li .body{flex:1}
+.feat-list li .body strong{font-weight:500;font-size:15px;color:var(--text);display:block;margin-bottom:4px}
+.feat-list li .body span{font-size:13px;color:var(--text-3);line-height:1.5}
+.bunker-stage{aspect-ratio:1.05/1;background:linear-gradient(135deg,#0c1118,#080b10);border:1px solid var(--line-2);position:relative;overflow:hidden}
+.bunker-stage::before{content:"";position:absolute;inset:0;
+  background-image:linear-gradient(rgba(77,212,232,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(77,212,232,0.04) 1px,transparent 1px);
+  background-size:18px 18px}
+
+/* ===== WORKFLOW + COMPLIANCE ===== */
+.wc-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:64px}
+@media(max-width:980px){.wc-grid{grid-template-columns:1fr}}
+.wc{padding:36px;border:1px solid var(--line);background:linear-gradient(180deg,rgba(15,20,28,0.4),rgba(10,13,19,0.2));position:relative;overflow:hidden}
+.wc .corner{position:absolute;top:14px;right:14px;font-family:var(--mono);font-size:10px;color:var(--text-3);letter-spacing:0.16em}
+.wc h3{font-size:28px;font-weight:300;margin:8px 0 18px;letter-spacing:-0.015em}
+.wc h3 em{font-family:var(--serif);font-style:italic;font-weight:300;color:var(--cyan)}
+.wc p{font-size:14px;color:var(--text-3);line-height:1.6;margin-bottom:24px}
+.wc-viz{margin-top:24px;height:200px;background:rgba(6,8,12,0.4);border:1px solid var(--line);position:relative;overflow:hidden}
+.wc-viz svg{width:100%;height:100%}
+.wc-list{display:flex;flex-direction:column;gap:10px;margin-top:18px}
+.wc-list .item{display:flex;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:12px}
+.wc-list .item:last-child{border-bottom:none}
+.wc-list .item .tick{width:16px;height:16px;border:1px solid var(--ok);display:flex;align-items:center;justify-content:center;color:var(--ok);font-size:10px}
+.wc-list .item .doc{flex:1;color:var(--text-2)}
+.wc-list .item .ref{color:var(--text-3);font-size:10px;letter-spacing:0.12em}
+
+/* ===== DIGITAL TWIN ===== */
+.dt-section{position:relative;overflow:hidden}
+.dt-bg{position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 0%,rgba(77,212,232,0.08),transparent 60%);
+  pointer-events:none;z-index:0}
+.dt-content{position:relative;z-index:2}
+.dt-stage{margin-top:64px;aspect-ratio:2.4/1;background:linear-gradient(135deg,#0c1118,#080b10);border:1px solid var(--line-2);position:relative;overflow:hidden}
+@media(max-width:720px){.dt-stage{aspect-ratio:1/1}}
+.dt-stage::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(77,212,232,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(77,212,232,0.04) 1px,transparent 1px);background-size:30px 30px}
+.dt-features{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:24px;border:1px solid var(--line);border-bottom:none}
+@media(max-width:980px){.dt-features{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:540px){.dt-features{grid-template-columns:1fr}}
+.dt-feat{padding:28px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.dt-feat:last-child{border-right:none}
+.dt-feat .n{font-family:var(--mono);font-size:11px;color:var(--cyan);letter-spacing:0.18em;margin-bottom:14px}
+.dt-feat h4{font-size:16px;font-weight:400;margin-bottom:8px}
+.dt-feat p{font-size:13px;color:var(--text-3);line-height:1.5}
+
+/* ===== UPLOAD ===== */
+.upload-wrap{position:relative;margin-top:64px}
+.dropzone{aspect-ratio:2.5/1;border:1px dashed var(--line-2);background:linear-gradient(135deg,rgba(15,20,28,0.4),rgba(10,13,19,0.2));display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;text-align:center;padding:60px 40px;position:relative;transition:all .3s;cursor:pointer}
+@media(max-width:720px){.dropzone{aspect-ratio:1.4/1;padding:40px 24px}}
+.dropzone.drag{border-color:var(--cyan);background:rgba(77,212,232,0.04)}
+.dropzone .icon{width:64px;height:64px;color:var(--cyan)}
+.dropzone .icon svg{width:100%;height:100%;stroke:currentColor;stroke-width:1;fill:none}
+.dropzone .ttl{font-size:24px;font-weight:300;letter-spacing:-0.01em}
+.dropzone .ttl em{font-family:var(--serif);font-style:italic;color:var(--cyan)}
+.dropzone .sub{font-size:13px;color:var(--text-3);max-width:520px;line-height:1.55}
+.dropzone .formats{display:flex;gap:10px;margin-top:8px;font-family:var(--mono);font-size:10px;letter-spacing:0.14em;color:var(--text-2)}
+.dropzone .formats span{padding:4px 10px;border:1px solid var(--line-2)}
+.upload-state{display:none;padding:36px;border:1px solid var(--cyan);background:rgba(77,212,232,0.04);text-align:center}
+.upload-state.show{display:block}
+.upload-state .progress{height:2px;background:var(--ink-3);position:relative;margin:24px auto;max-width:400px;overflow:hidden}
+.upload-state .progress .bar{position:absolute;left:0;top:0;bottom:0;background:var(--cyan);width:0%;transition:width .1s linear}
+.upload-state .scan-results{display:none;text-align:left;max-width:600px;margin:24px auto 0}
+.upload-state .scan-results.show{display:block}
+.upload-state .scan-results .row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:12px}
+.upload-state .scan-results .row .k{color:var(--text-3);text-transform:uppercase;letter-spacing:0.12em;font-size:10px}
+.upload-state .scan-results .row .v{color:var(--cyan)}
+
+/* ===== FOOTER ===== */
+footer{margin-top:120px;padding:80px 0 40px;border-top:1px solid var(--line);background:linear-gradient(180deg,transparent,rgba(6,8,12,0.6));position:relative;z-index:2}
+.foot-top{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:48px;margin-bottom:60px}
+@media(max-width:980px){.foot-top{grid-template-columns:1fr 1fr}}
+@media(max-width:540px){.foot-top{grid-template-columns:1fr}}
+.foot-brand .logo{margin-bottom:18px}
+.foot-brand p{font-size:14px;color:var(--text-3);line-height:1.6;max-width:340px;margin-bottom:24px}
+.foot-col h5{font-family:var(--mono);font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-2);margin-bottom:18px}
+.foot-col ul{list-style:none;display:flex;flex-direction:column;gap:10px}
+.foot-col li a{font-size:13px;color:var(--text-3);transition:color .2s}
+.foot-col li a:hover{color:var(--cyan)}
+.foot-cert{padding:24px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:24px;margin-bottom:24px}
+.foot-cert .group{display:flex;gap:32px;flex-wrap:wrap}
+.foot-cert .cert{font-family:var(--mono);font-size:11px;color:var(--text-3);letter-spacing:0.12em;display:flex;align-items:center;gap:8px}
+.foot-cert .cert::before{content:"";width:5px;height:5px;background:var(--cyan);border-radius:50%}
+.foot-meta{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--text-3);letter-spacing:0.14em;text-transform:uppercase;flex-wrap:wrap;gap:14px}
+
+/* ===== ANIMATIONS ===== */
+@keyframes scan{0%{transform:translateY(-100%)}100%{transform:translateY(100%)}}
+.scan-line{position:absolute;left:0;right:0;height:60px;background:linear-gradient(180deg,transparent,rgba(77,212,232,0.08),transparent);pointer-events:none;animation:scan 6s infinite linear;z-index:3}
+
+@keyframes fade-up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.reveal{opacity:0}
+.reveal.in{animation:fade-up .9s cubic-bezier(.2,.7,.2,1) forwards}
+
+/* divider */
+.divider{height:1px;background:linear-gradient(90deg,transparent,var(--line-2),transparent);margin:0;position:relative}
+.divider::after{content:attr(data-label);position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--ink-0);padding:0 18px;font-family:var(--mono);font-size:9px;letter-spacing:0.24em;color:var(--text-3);text-transform:uppercase}
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+<div class="noise"></div>
+
+<!-- ============ NAV ============ -->
+<nav class="top">
+  <div class="nav-inner">
+    <div class="logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 32 32" fill="none">
+          <circle cx="16" cy="16" r="14" stroke="#4dd4e8" stroke-width="0.8"/>
+          <circle cx="16" cy="16" r="9" stroke="#4dd4e8" stroke-width="0.8" opacity="0.5"/>
+          <circle cx="16" cy="16" r="4" fill="#4dd4e8" opacity="0.9"/>
+          <path d="M16 2 L16 8 M16 24 L16 30 M2 16 L8 16 M24 16 L30 16" stroke="#4dd4e8" stroke-width="0.8"/>
+          <path d="M6 6 L10 10 M22 22 L26 26 M6 26 L10 22 M22 10 L26 6" stroke="#4dd4e8" stroke-width="0.6" opacity="0.6"/>
+        </svg>
+      </div>
+      <div>
+        <div class="logo-text">ALMATIN</div>
+        <div class="logo-sub">RADIATION INFRASTRUCTURE</div>
+      </div>
+    </div>
+
+    <div class="nav-links">
+      <a href="#sim">Simulation</a>
+      <a href="#cases">Case Studies</a>
+      <a href="#calculator">Calculator</a>
+      <a href="#neutron">Neutron</a>
+      <a href="#compliance">Compliance</a>
+      <a href="#upload">Submit Drawing</a>
+    </div>
+
+    <div class="nav-cta">
+      <div class="status-pill"><span class="dot"></span>SYSTEMS OPERATIONAL</div>
+      <button class="btn">Request Assessment <span class="arrow">→</span></button>
+    </div>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<header class="section hero">
+  <div class="hero-glow"></div>
+  <div class="hero-glow2"></div>
+
+  <div class="shell">
+    <div class="hero-grid">
+      <div class="hero-left">
+        <div class="hero-meta">
+          <span>EST. NUCLEAR-GRADE ENGINEERING</span>
+          <span>AERB · NCRP · IEC 61331</span>
+          <span>BENGALURU · DELHI · DUBAI</span>
+        </div>
+
+        <h1 class="h-display reveal in">
+          Engineering<br/>
+          Radiation-Safe<br/>
+          Medical <em>Infrastructure.</em>
+        </h1>
+
+        <p class="hero-sub">
+          ALMATIN simulates, designs and validates shielding systems for Cath Labs, PET/CT, cyclotrons and hybrid neutron suites — from scatter physics to compliance handover.
+        </p>
+
+        <div class="hero-cta">
+          <button class="btn primary">Request Shielding Assessment <span class="arrow">→</span></button>
+          <button class="btn ghost">Upload Room Drawing <span class="arrow">↗</span></button>
+        </div>
+
+        <div class="hero-stats">
+          <div class="stat">
+            <div class="num">240<span class="u">+</span></div>
+            <div class="lbl">Rooms Engineered</div>
+          </div>
+          <div class="stat">
+            <div class="num">99.6<span class="u">%</span></div>
+            <div class="lbl">First-Pass Compliance</div>
+          </div>
+          <div class="stat">
+            <div class="num">14</div>
+            <div class="lbl">OEM Partners</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HERO VIZ -->
+      <div class="hero-viz">
+        <div class="live-tag"><span class="blink"></span>LIVE SCATTER SIMULATION</div>
+        <div class="viz-corners"><div class="tl"></div><div class="tr"></div><div class="bl"></div><div class="br"></div></div>
+
+        <div class="viz-readout tl">
+          <span class="k">SOURCE</span><span class="v">X-Ray · 100 kVp</span>
+        </div>
+        <div class="viz-readout tr">
+          <span class="k">LEAKAGE</span><span class="v" id="hero-leak">0.08 mR/hr</span>
+        </div>
+        <div class="viz-readout bl">
+          <span class="k">SHIELD</span><span class="v">Pb 2.0mm + BPE</span>
+        </div>
+        <div class="viz-readout br">
+          <span class="k">ATTENUATION</span><span class="v">99.4%</span>
+        </div>
+
+        <!-- Cath Lab cross section -->
+        <svg class="hero-svg" viewBox="0 0 500 460" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <linearGradient id="floorGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#1a2230" stop-opacity="0.4"/>
+              <stop offset="100%" stop-color="#0a0d13" stop-opacity="0.8"/>
+            </linearGradient>
+            <radialGradient id="heatGrad" cx="0.5" cy="0.5" r="0.5">
+              <stop offset="0%" stop-color="#ff8a4c" stop-opacity="0.55"/>
+              <stop offset="40%" stop-color="#ff8a4c" stop-opacity="0.2"/>
+              <stop offset="100%" stop-color="#ff8a4c" stop-opacity="0"/>
+            </radialGradient>
+            <radialGradient id="primaryBeam" cx="0.5" cy="0" r="1">
+              <stop offset="0%" stop-color="#ffb84d" stop-opacity="0.55"/>
+              <stop offset="100%" stop-color="#ffb84d" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+
+          <!-- Room outline + walls (shielding stack) -->
+          <rect x="40" y="60" width="420" height="340" fill="url(#floorGrad)" stroke="#4dd4e8" stroke-opacity="0.35" stroke-width="1"/>
+          <!-- inner wall (pb layer indicator) -->
+          <rect x="52" y="72" width="396" height="316" fill="none" stroke="#4dd4e8" stroke-opacity="0.18" stroke-dasharray="2 3" stroke-width="0.7"/>
+
+          <!-- Wall thickness annotations -->
+          <line x1="40" y1="44" x2="60" y2="44" stroke="#4dd4e8" stroke-opacity="0.5" stroke-width="0.6"/>
+          <line x1="40" y1="40" x2="40" y2="48" stroke="#4dd4e8" stroke-opacity="0.5" stroke-width="0.6"/>
+          <line x1="60" y1="40" x2="60" y2="48" stroke="#4dd4e8" stroke-opacity="0.5" stroke-width="0.6"/>
+          <text x="70" y="47" font-family="IBM Plex Mono" font-size="8" fill="#4dd4e8" opacity="0.7">Pb 2.0mm + 230mm CONCRETE</text>
+
+          <!-- Heat zones -->
+          <ellipse cx="250" cy="220" rx="180" ry="120" fill="url(#heatGrad)" opacity="0.7"/>
+          <path d="M 250 130 L 200 220 L 300 220 Z" fill="url(#primaryBeam)"/>
+
+          <!-- C-arm + table (Cath Lab geometry) -->
+          <g transform="translate(250,200)">
+            <!-- table -->
+            <rect x="-80" y="20" width="160" height="14" fill="#0f141c" stroke="#4dd4e8" stroke-opacity="0.6" stroke-width="0.7"/>
+            <rect x="-78" y="22" width="156" height="3" fill="#4dd4e8" opacity="0.25"/>
+            <line x1="-90" y1="34" x2="-90" y2="60" stroke="#4dd4e8" stroke-opacity="0.6" stroke-width="0.7"/>
+            <line x1="90" y1="34" x2="90" y2="60" stroke="#4dd4e8" stroke-opacity="0.6" stroke-width="0.7"/>
+
+            <!-- C-arm -->
+            <path d="M -110 -60 Q -110 0 -50 0 Q 50 0 110 0 Q 110 -60 110 -90" fill="none" stroke="#4dd4e8" stroke-opacity="0.7" stroke-width="1.4"/>
+            <!-- Source (X-ray tube) -->
+            <circle cx="0" cy="-70" r="9" fill="#ffb84d" opacity="0.95"/>
+            <circle cx="0" cy="-70" r="14" fill="none" stroke="#ffb84d" stroke-opacity="0.5" stroke-width="0.6"/>
+            <circle cx="0" cy="-70" r="20" fill="none" stroke="#ffb84d" stroke-opacity="0.25" stroke-width="0.5"/>
+            <text x="14" y="-66" font-family="IBM Plex Mono" font-size="8" fill="#ffb84d">SRC</text>
+
+            <!-- Detector -->
+            <rect x="-22" y="22" width="44" height="10" fill="#0a0d13" stroke="#4dd4e8" stroke-opacity="0.7" stroke-width="0.7"/>
+            <text x="26" y="30" font-family="IBM Plex Mono" font-size="8" fill="#4dd4e8" opacity="0.8">DET</text>
+          </g>
+
+          <!-- Operator + lead curtain -->
+          <g transform="translate(125,300)">
+            <circle cx="0" cy="0" r="6" fill="none" stroke="#5ee0a0" stroke-width="0.8"/>
+            <path d="M -6 4 Q 0 16 6 4 L 4 24 L -4 24 Z" fill="none" stroke="#5ee0a0" stroke-width="0.8"/>
+            <text x="-26" y="38" font-family="IBM Plex Mono" font-size="7" fill="#5ee0a0">OPERATOR</text>
+            <text x="-18" y="46" font-family="IBM Plex Mono" font-size="7" fill="#5ee0a0" opacity="0.6">0.5mm Pb</text>
+          </g>
+
+          <!-- Control room (adjacent) -->
+          <g transform="translate(395,310)">
+            <rect x="-30" y="-30" width="60" height="60" fill="none" stroke="#4dd4e8" stroke-opacity="0.5" stroke-dasharray="3 3" stroke-width="0.7"/>
+            <text x="-26" y="-36" font-family="IBM Plex Mono" font-size="7" fill="#4dd4e8" opacity="0.7">CONTROL · T=1.0</text>
+            <circle cx="0" cy="0" r="5" fill="none" stroke="#5ee0a0" stroke-width="0.8"/>
+            <path d="M -5 4 Q 0 14 5 4 L 4 20 L -4 20 Z" fill="none" stroke="#5ee0a0" stroke-width="0.8"/>
+          </g>
+
+          <!-- Crosshairs / measurement points -->
+          <g font-family="IBM Plex Mono" font-size="7" fill="#4dd4e8" opacity="0.6">
+            <g transform="translate(80,120)">
+              <path d="M -5 0 L 5 0 M 0 -5 L 0 5" stroke="#4dd4e8" stroke-width="0.7"/>
+              <text x="8" y="3">P1 · 0.04 mR/hr</text>
+            </g>
+            <g transform="translate(420,120)">
+              <path d="M -5 0 L 5 0 M 0 -5 L 0 5" stroke="#4dd4e8" stroke-width="0.7"/>
+              <text x="-78" y="3">P2 · 0.06 mR/hr</text>
+            </g>
+            <g transform="translate(80,380)">
+              <path d="M -5 0 L 5 0 M 0 -5 L 0 5" stroke="#4dd4e8" stroke-width="0.7"/>
+              <text x="8" y="3">P3 · 0.03 mR/hr</text>
+            </g>
+          </g>
+
+          <!-- Compass / scale -->
+          <g transform="translate(60,420)" font-family="IBM Plex Mono" font-size="8" fill="#67768a">
+            <text x="0" y="0">SCALE 1:50</text>
+            <text x="120" y="0">CATH LAB · TYPE-B</text>
+            <text x="290" y="0">VIEW · PLAN</text>
+          </g>
+        </svg>
+
+        <!-- Particle canvas overlay -->
+        <canvas class="hero-canvas" id="scatterCanvas"></canvas>
+      </div>
+    </div>
+
+    <div class="scroll-cue">
+      <span class="line"></span>
+      <span>SCROLL · DESCEND INTO SIMULATION</span>
+    </div>
+  </div>
+</header>
+
+<!-- ============ CAPABILITY STRIP ============ -->
+<section class="shell">
+  <div class="cap-strip">
+    <div class="cap">
+      <div class="num">[01]</div>
+      <div class="ico"><svg viewBox="0 0 48 48"><path d="M8 38 L8 20 Q8 10 18 10 L30 10 Q40 10 40 20 L40 38" /><path d="M16 38 L16 28 L32 28 L32 38" /><circle cx="24" cy="22" r="4"/><line x1="24" y1="14" x2="24" y2="18"/></svg></div>
+      <h3>Cath Lab Shielding</h3>
+      <p>Pb-equivalent walls, ceilings, doors and viewing windows for interventional radiology suites.</p>
+      <div class="more">→</div>
+    </div>
+    <div class="cap">
+      <div class="num">[02]</div>
+      <div class="ico"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="14"/><circle cx="24" cy="24" r="6"/><path d="M24 4 L24 12 M24 36 L24 44 M4 24 L12 24 M36 24 L44 24"/></svg></div>
+      <h3>PET/CT Suites</h3>
+      <p>Annihilation 511 keV photon shielding, hot lab integration, dose calibrator enclosures.</p>
+      <div class="more">→</div>
+    </div>
+    <div class="cap">
+      <div class="num">[03]</div>
+      <div class="ico"><svg viewBox="0 0 48 48"><path d="M6 24 Q6 8 24 8 Q42 8 42 24 Q42 40 24 40 Q6 40 6 24 Z"/><path d="M14 24 Q14 16 24 16 Q34 16 34 24 Q34 32 24 32"/><path d="M24 16 L24 32"/><path d="M16 28 L32 28" stroke-dasharray="2 2"/></svg></div>
+      <h3>Cyclotron Bunkers</h3>
+      <p>Borated polyethylene neutron shielding, maze design, activation analysis, decay corridors.</p>
+      <div class="more">→</div>
+    </div>
+    <div class="cap">
+      <div class="num">[04]</div>
+      <div class="ico"><svg viewBox="0 0 48 48"><rect x="8" y="14" width="32" height="20" /><path d="M8 22 L40 22"/><path d="M14 18 L14 30 M22 14 L22 34 M30 18 L30 30 M38 14 L38 34"/></svg></div>
+      <h3>Hybrid Neutron + γ</h3>
+      <p>Layered HDPE-Pb-BPE composites for high-energy proton, BNCT and theranostics facilities.</p>
+      <div class="more">→</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SIMULATION ENGINE ============ -->
+<section class="section" id="sim">
+  <div class="shell">
+    <div class="eyebrow"><span class="id">[02 / 11]</span><span>Simulation Engine</span></div>
+    <h2 class="h-section">Tune the source. <em>Watch shielding behave.</em></h2>
+    <p class="lede" style="margin-top:24px">A real-time scatter solver — adjust workload, kVp, occupancy and layer composition; see the leakage heatmap, attenuation curve and compliance status recompute instantly.</p>
+
+    <div class="sim-wrap">
+      <!-- STAGE -->
+      <div class="sim-stage">
+        <div class="scan-line"></div>
+        <div class="sim-readouts">
+          <div class="row"><span>X · </span><span class="val" id="sim-x">250.0 cm</span></div>
+          <div class="row"><span>Y · </span><span class="val" id="sim-y">180.0 cm</span></div>
+          <div class="row"><span>NODE · </span><span class="val">SIM-04A · ACTIVE</span></div>
+        </div>
+        <div class="sim-legend">
+          DOSE-EQ HEATMAP
+          <div class="scale"><div class="bar"></div></div>
+          <div class="ends" style="width:90px"><span>0.01</span><span>5.0 mR/hr</span></div>
+        </div>
+
+        <svg class="sim-svg" viewBox="0 0 600 480" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <radialGradient id="heat1" cx="0.5" cy="0.5" r="0.5">
+              <stop offset="0%" stop-color="#ff4d4d" stop-opacity="0.7"/>
+              <stop offset="30%" stop-color="#ff8a4c" stop-opacity="0.5"/>
+              <stop offset="60%" stop-color="#ffb84d" stop-opacity="0.25"/>
+              <stop offset="100%" stop-color="#4dd4e8" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+
+          <!-- Outer corridor -->
+          <rect x="20" y="20" width="560" height="440" fill="none" stroke="#67768a" stroke-opacity="0.3" stroke-width="0.6" stroke-dasharray="2 4"/>
+          <text x="30" y="38" font-family="IBM Plex Mono" font-size="9" fill="#67768a">PUBLIC CORRIDOR · T = 1/16</text>
+
+          <!-- Room (cath lab) -->
+          <rect x="60" y="60" width="400" height="360" fill="#0c1118" stroke="#4dd4e8" stroke-opacity="0.6" stroke-width="1.2"/>
+
+          <!-- Inner Pb layer indicator -->
+          <rect x="64" y="64" width="392" height="352" fill="none" stroke="#4dd4e8" stroke-opacity="0.25" stroke-dasharray="2 3" stroke-width="0.7"/>
+
+          <!-- Control room -->
+          <rect x="480" y="280" width="100" height="140" fill="#0c1118" stroke="#4dd4e8" stroke-opacity="0.5" stroke-width="0.8"/>
+          <text x="488" y="298" font-family="IBM Plex Mono" font-size="9" fill="#4dd4e8" opacity="0.7">CONTROL</text>
+          <text x="488" y="310" font-family="IBM Plex Mono" font-size="8" fill="#67768a">T = 1.0 · U = 1/4</text>
+
+          <!-- Heatmap (dynamic) -->
+          <g id="heatLayer">
+            <ellipse id="primaryHeat" cx="260" cy="240" rx="200" ry="140" fill="url(#heat1)" opacity="0.85"/>
+            <ellipse id="secondaryHeat" cx="320" cy="200" rx="80" ry="60" fill="url(#heat1)" opacity="0.5"/>
+          </g>
+
+          <!-- C-arm + Table -->
+          <g transform="translate(260,240)">
+            <ellipse cx="0" cy="0" rx="100" ry="70" fill="none" stroke="#4dd4e8" stroke-opacity="0.3" stroke-width="0.6"/>
+            <ellipse cx="0" cy="0" rx="60" ry="42" fill="none" stroke="#4dd4e8" stroke-opacity="0.25" stroke-width="0.5" stroke-dasharray="2 2"/>
+            <rect x="-70" y="-6" width="140" height="12" fill="#0a0d13" stroke="#4dd4e8" stroke-opacity="0.6" stroke-width="0.7"/>
+            <circle cx="0" cy="-50" r="8" fill="#ffb84d"/>
+            <circle cx="0" cy="-50" r="14" fill="none" stroke="#ffb84d" stroke-opacity="0.5" stroke-width="0.5"/>
+            <text x="12" y="-46" font-family="IBM Plex Mono" font-size="8" fill="#ffb84d">SRC</text>
+            <rect x="-18" y="40" width="36" height="9" fill="#0a0d13" stroke="#4dd4e8" stroke-opacity="0.6" stroke-width="0.7"/>
+          </g>
+
+          <!-- Measurement points -->
+          <g font-family="IBM Plex Mono" font-size="8" fill="#4dd4e8">
+            <g transform="translate(90,90)" id="mp1">
+              <path d="M -5 0 L 5 0 M 0 -5 L 0 5" stroke="#4dd4e8" stroke-width="0.7"/>
+              <text x="8" y="3" id="mp1-v">P1 · 0.12 mR/hr</text>
+            </g>
+            <g transform="translate(440,100)" id="mp2">
+              <path d="M -5 0 L 5 0 M 0 -5 L 0 5" stroke="#4dd4e8" stroke-width="0.7"/>
+              <text x="-92" y="3" id="mp2-v">P2 · 0.09 mR/hr</text>
+            </g>
+            <g transform="translate(540,360)" id="mp3">
+              <path d="M -5 0 L 5 0 M 0 -5 L 0 5" stroke="#4dd4e8" stroke-width="0.7"/>
+              <text x="-100" y="3" id="mp3-v">P3 · 0.04 mR/hr</text>
+            </g>
+            <g transform="translate(90,400)" id="mp4">
+              <path d="M -5 0 L 5 0 M 0 -5 L 0 5" stroke="#4dd4e8" stroke-width="0.7"/>
+              <text x="8" y="3" id="mp4-v">P4 · 0.07 mR/hr</text>
+            </g>
+          </g>
+
+          <!-- Scale -->
+          <g transform="translate(60,448)" font-family="IBM Plex Mono" font-size="8" fill="#67768a">
+            <line x1="0" y1="0" x2="80" y2="0" stroke="#67768a" stroke-width="0.5"/>
+            <line x1="0" y1="-3" x2="0" y2="3" stroke="#67768a" stroke-width="0.5"/>
+            <line x1="80" y1="-3" x2="80" y2="3" stroke="#67768a" stroke-width="0.5"/>
+            <text x="0" y="14">1.00 m</text>
+          </g>
+        </svg>
+      </div>
+
+      <!-- CONTROLS -->
+      <div class="sim-controls">
+        <h3>Live Parameters</h3>
+        <p class="ctrl-desc">Inputs drive a barrier transmission solver based on NCRP-147 methodology with neutron extension for high-energy modes.</p>
+
+        <div class="ctrl">
+          <div class="ctrl-head"><span class="lbl">Tube Potential</span><span class="val"><span id="v-kvp">100</span><span class="u">kVp</span></span></div>
+          <input type="range" min="70" max="125" value="100" id="i-kvp">
+        </div>
+        <div class="ctrl">
+          <div class="ctrl-head"><span class="lbl">Workload</span><span class="val"><span id="v-wl">320</span><span class="u">mA·min/wk</span></span></div>
+          <input type="range" min="50" max="800" value="320" id="i-wl">
+        </div>
+        <div class="ctrl">
+          <div class="ctrl-head"><span class="lbl">Occupancy (T)</span><span class="val" id="v-occ">1.0</span></div>
+          <input type="range" min="1" max="100" value="100" id="i-occ">
+        </div>
+        <div class="ctrl">
+          <div class="ctrl-head"><span class="lbl">Lead Equivalence</span><span class="val"><span id="v-pb">2.0</span><span class="u">mm Pb</span></span></div>
+          <input type="range" min="5" max="40" value="20" id="i-pb">
+        </div>
+
+        <div class="ctrl">
+          <div class="ctrl-head"><span class="lbl">Shielding Mode</span><span class="val">HYBRID READY</span></div>
+          <div class="toggle-row">
+            <button class="toggle on" data-mode="pb">Pb Sheet</button>
+            <button class="toggle" data-mode="bpe">+ Borated PE</button>
+            <button class="toggle" data-mode="hdpe">+ HDPE</button>
+            <button class="toggle" data-mode="hybrid">Hybrid γ+n</button>
+          </div>
+        </div>
+
+        <!-- OUTPUT BLOCK -->
+        <div class="sim-output">
+          <div class="header">
+            <span class="ttl">Computed Output</span>
+            <div class="compliance-badge" id="comp-badge"><span class="dot"></span>AERB Compliant</div>
+          </div>
+          <div class="sim-metrics">
+            <div class="sm">
+              <div class="k">Wall Leakage</div>
+              <div class="v"><span id="o-leak">0.08</span><span class="u">mR/hr</span></div>
+              <div class="delta" id="o-leak-d">−96% vs unshielded</div>
+            </div>
+            <div class="sm">
+              <div class="k">Annual Dose (Control)</div>
+              <div class="v"><span id="o-dose">0.42</span><span class="u">mSv/yr</span></div>
+              <div class="delta">Below 1 mSv limit</div>
+            </div>
+            <div class="sm">
+              <div class="k">Attenuation</div>
+              <div class="v"><span id="o-att">99.4</span><span class="u">%</span></div>
+              <div class="delta">@ Wall Plane B</div>
+            </div>
+            <div class="sm">
+              <div class="k">Pb Equivalent</div>
+              <div class="v"><span id="o-pbeq">2.0</span><span class="u">mm</span></div>
+              <div class="delta">+ 230mm concrete</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider" data-label="EVIDENCE · BEFORE / AFTER"></div>
+
+<!-- ============ CASE STUDIES ============ -->
+<section class="section" id="cases">
+  <div class="shell">
+    <div class="eyebrow"><span class="id">[03 / 11]</span><span>Project Evidence</span></div>
+    <h2 class="h-section">Measured outcomes. <em>Drag to compare.</em></h2>
+    <p class="lede" style="margin-top:24px">Each engagement is documented from pre-survey leakage to post-installation validation — drawings, simulations and certified survey reports.</p>
+
+    <div class="case-grid">
+
+      <!-- CASE 1 -->
+      <article class="case">
+        <div class="case-viz" data-case="1">
+          <svg viewBox="0 0 360 240" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <clipPath id="clipL1"><rect id="clipL1r" x="0" y="0" width="180" height="240"/></clipPath>
+              <clipPath id="clipR1"><rect id="clipR1r" x="180" y="0" width="180" height="240"/></clipPath>
+              <radialGradient id="hot1" cx="0.5" cy="0.5" r="0.6">
+                <stop offset="0%" stop-color="#ff4d4d" stop-opacity="0.85"/>
+                <stop offset="40%" stop-color="#ff8a4c" stop-opacity="0.5"/>
+                <stop offset="100%" stop-color="#ff8a4c" stop-opacity="0"/>
+              </radialGradient>
+              <radialGradient id="cool1" cx="0.5" cy="0.5" r="0.6">
+                <stop offset="0%" stop-color="#4dd4e8" stop-opacity="0.4"/>
+                <stop offset="100%" stop-color="#4dd4e8" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <rect width="360" height="240" fill="#0a0d13"/>
+            <g clip-path="url(#clipL1)">
+              <rect width="360" height="240" fill="#0a0d13"/>
+              <ellipse cx="180" cy="130" rx="170" ry="110" fill="url(#hot1)"/>
+              <rect x="40" y="40" width="280" height="160" fill="none" stroke="#ff4d4d" stroke-opacity="0.6" stroke-width="1"/>
+              <rect x="160" y="100" width="40" height="40" fill="none" stroke="#ff4d4d" stroke-width="0.7"/>
+            </g>
+            <g clip-path="url(#clipR1)">
+              <rect width="360" height="240" fill="#0a0d13"/>
+              <ellipse cx="180" cy="130" rx="170" ry="110" fill="url(#cool1)"/>
+              <rect x="40" y="40" width="280" height="160" fill="none" stroke="#4dd4e8" stroke-opacity="0.6" stroke-width="1"/>
+              <rect x="160" y="100" width="40" height="40" fill="none" stroke="#4dd4e8" stroke-width="0.7"/>
+            </g>
+            <!-- grid -->
+            <g stroke="#4dd4e8" stroke-opacity="0.08" stroke-width="0.5">
+              <line x1="0" y1="60" x2="360" y2="60"/><line x1="0" y1="120" x2="360" y2="120"/><line x1="0" y1="180" x2="360" y2="180"/>
+              <line x1="60" y1="0" x2="60" y2="240"/><line x1="120" y1="0" x2="120" y2="240"/><line x1="240" y1="0" x2="240" y2="240"/><line x1="300" y1="0" x2="300" y2="240"/>
+            </g>
+          </svg>
+          <div class="ab-label before">BEFORE</div>
+          <div class="ab-label after">AFTER</div>
+          <div class="ab-line" data-case="1" style="left:50%"><div class="ab-handle">⇔</div></div>
+        </div>
+        <div class="case-meta">
+          <span class="id">CASE · IND/CL/2024-017</span>
+          <span class="tag">Cath Lab Retrofit</span>
+        </div>
+        <h3>Apollo Hospitals · Hyderabad</h3>
+        <p class="sub">Active suite retrofit · 6-week window · Philips Azurion 7</p>
+        <div class="case-metrics">
+          <div class="cm"><div class="k">Initial</div><div class="v hot">3.8<span style="opacity:0.6;font-size:11px"> mR/hr</span></div></div>
+          <div class="cm"><div class="k">Final</div><div class="v ok">0.18<span style="opacity:0.6;font-size:11px"> mR/hr</span></div></div>
+          <div class="cm"><div class="k">Downtime</div><div class="v">−40%</div></div>
+        </div>
+      </article>
+
+      <!-- CASE 2 -->
+      <article class="case">
+        <div class="case-viz" data-case="2">
+          <svg viewBox="0 0 360 240" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <clipPath id="clipL2"><rect id="clipL2r" x="0" y="0" width="180" height="240"/></clipPath>
+              <clipPath id="clipR2"><rect id="clipR2r" x="180" y="0" width="180" height="240"/></clipPath>
+              <radialGradient id="hot2" cx="0.5" cy="0.5" r="0.6">
+                <stop offset="0%" stop-color="#ff4d4d" stop-opacity="0.85"/>
+                <stop offset="100%" stop-color="#ff8a4c" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <rect width="360" height="240" fill="#0a0d13"/>
+            <g clip-path="url(#clipL2)">
+              <rect width="360" height="240" fill="#0a0d13"/>
+              <circle cx="180" cy="120" r="80" fill="url(#hot2)"/>
+              <circle cx="180" cy="120" r="100" fill="none" stroke="#ff4d4d" stroke-opacity="0.7" stroke-dasharray="3 2" stroke-width="0.8"/>
+              <circle cx="180" cy="120" r="40" fill="none" stroke="#ff4d4d" stroke-opacity="0.5" stroke-width="0.7"/>
+              <text x="40" y="40" font-family="IBM Plex Mono" font-size="8" fill="#ff4d4d">F-18 · 511 keV</text>
+            </g>
+            <g clip-path="url(#clipR2)">
+              <rect width="360" height="240" fill="#0a0d13"/>
+              <circle cx="180" cy="120" r="40" fill="#4dd4e8" opacity="0.15"/>
+              <circle cx="180" cy="120" r="100" fill="none" stroke="#4dd4e8" stroke-opacity="0.6" stroke-dasharray="3 2" stroke-width="0.8"/>
+              <circle cx="180" cy="120" r="40" fill="none" stroke="#5ee0a0" stroke-width="0.8"/>
+              <text x="200" y="40" font-family="IBM Plex Mono" font-size="8" fill="#5ee0a0">Pb 60mm + BPE</text>
+            </g>
+            <g stroke="#4dd4e8" stroke-opacity="0.08" stroke-width="0.5">
+              <line x1="0" y1="60" x2="360" y2="60"/><line x1="0" y1="180" x2="360" y2="180"/>
+              <line x1="60" y1="0" x2="60" y2="240"/><line x1="300" y1="0" x2="300" y2="240"/>
+            </g>
+          </svg>
+          <div class="ab-label before">BEFORE</div>
+          <div class="ab-label after">AFTER</div>
+          <div class="ab-line" data-case="2" style="left:50%"><div class="ab-handle">⇔</div></div>
+        </div>
+        <div class="case-meta">
+          <span class="id">CASE · IND/PT/2023-009</span>
+          <span class="tag">PET/CT Suite</span>
+        </div>
+        <h3>Tata Memorial · Mumbai</h3>
+        <p class="sub">Greenfield hot-lab + PET/CT · Siemens Biograph mCT</p>
+        <div class="case-metrics">
+          <div class="cm"><div class="k">Initial Plan</div><div class="v hot">11.2<span style="opacity:0.6;font-size:11px"> mR/hr</span></div></div>
+          <div class="cm"><div class="k">Validated</div><div class="v ok">0.09<span style="opacity:0.6;font-size:11px"> mR/hr</span></div></div>
+          <div class="cm"><div class="k">Pb Saved</div><div class="v">−22%</div></div>
+        </div>
+      </article>
+
+      <!-- CASE 3 -->
+      <article class="case">
+        <div class="case-viz" data-case="3">
+          <svg viewBox="0 0 360 240" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <clipPath id="clipL3"><rect id="clipL3r" x="0" y="0" width="180" height="240"/></clipPath>
+              <clipPath id="clipR3"><rect id="clipR3r" x="180" y="0" width="180" height="240"/></clipPath>
+            </defs>
+            <rect width="360" height="240" fill="#0a0d13"/>
+            <g clip-path="url(#clipL3)">
+              <rect width="360" height="240" fill="#0a0d13"/>
+              <!-- maze before -->
+              <path d="M 40 200 L 40 60 L 320 60 L 320 200 L 240 200 L 240 100 L 120 100 L 120 200 Z" fill="#ff8a4c" fill-opacity="0.18" stroke="#ff4d4d" stroke-width="1"/>
+              <circle cx="180" cy="150" r="22" fill="none" stroke="#ff4d4d" stroke-width="1"/>
+              <text x="160" y="155" font-family="IBM Plex Mono" font-size="7" fill="#ff4d4d">CYC</text>
+              <text x="40" y="45" font-family="IBM Plex Mono" font-size="8" fill="#ff4d4d">NEUTRON LEAK · DOOR</text>
+            </g>
+            <g clip-path="url(#clipR3)">
+              <rect width="360" height="240" fill="#0a0d13"/>
+              <path d="M 40 200 L 40 60 L 320 60 L 320 200 L 240 200 L 240 100 L 120 100 L 120 200 Z" fill="#4dd4e8" fill-opacity="0.06" stroke="#4dd4e8" stroke-width="1"/>
+              <!-- BPE layers -->
+              <path d="M 50 200 L 50 70 L 310 70 L 310 200 L 250 200 L 250 110 L 110 110 L 110 200 Z" fill="none" stroke="#5ee0a0" stroke-width="0.6" stroke-dasharray="2 2"/>
+              <path d="M 60 200 L 60 80 L 300 80 L 300 200 L 260 200 L 260 120 L 100 120 L 100 200 Z" fill="none" stroke="#5ee0a0" stroke-width="0.5" stroke-dasharray="1 2"/>
+              <circle cx="180" cy="150" r="22" fill="none" stroke="#5ee0a0" stroke-width="1"/>
+              <text x="160" y="155" font-family="IBM Plex Mono" font-size="7" fill="#5ee0a0">CYC</text>
+              <text x="200" y="45" font-family="IBM Plex Mono" font-size="8" fill="#5ee0a0">BPE 150mm + HDPE</text>
+            </g>
+          </svg>
+          <div class="ab-label before">BEFORE</div>
+          <div class="ab-label after">AFTER</div>
+          <div class="ab-line" data-case="3" style="left:50%"><div class="ab-handle">⇔</div></div>
+        </div>
+        <div class="case-meta">
+          <span class="id">CASE · IND/CY/2024-003</span>
+          <span class="tag">Cyclotron Bunker</span>
+        </div>
+        <h3>HCG Cyclotron · Bengaluru</h3>
+        <p class="sub">18 MeV proton cyclotron · Hybrid neutron-γ maze redesign</p>
+        <div class="case-metrics">
+          <div class="cm"><div class="k">Initial Door</div><div class="v hot">28<span style="opacity:0.6;font-size:11px"> μSv/hr</span></div></div>
+          <div class="cm"><div class="k">Final Door</div><div class="v ok">0.6<span style="opacity:0.6;font-size:11px"> μSv/hr</span></div></div>
+          <div class="cm"><div class="k">Activation</div><div class="v">−87%</div></div>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<div class="divider" data-label="DESIGN · CALCULATOR"></div>
+
+<!-- ============ CALCULATOR ============ -->
+<section class="section" id="calculator">
+  <div class="shell">
+    <div class="eyebrow"><span class="id">[04 / 11]</span><span>Shielding Calculator</span></div>
+    <h2 class="h-section">From room specs to wall stackup, <em>in seconds.</em></h2>
+    <p class="lede" style="margin-top:24px">Engineering-grade barrier sizing — input the suite parameters and ALMATIN's solver returns a layered wall recommendation, attenuation curve and compliance margin.</p>
+
+    <div class="calc-wrap">
+      <!-- FORM -->
+      <div class="calc-form">
+        <div class="field">
+          <label>Machine Type</label>
+          <select id="c-machine">
+            <option value="cath">Cath Lab · Interventional</option>
+            <option value="ct">CT Scanner · Diagnostic</option>
+            <option value="pet">PET/CT · Hybrid</option>
+            <option value="cyc">Cyclotron · 18 MeV</option>
+            <option value="lin">Linac · 6 MV</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Workload (mA·min/wk)</label>
+          <input type="number" value="400" id="c-wl">
+        </div>
+        <div class="field">
+          <label>Tube Potential (kVp)</label>
+          <input type="number" value="100" id="c-kvp">
+        </div>
+        <div class="field">
+          <label>Wall Distance (m)</label>
+          <input type="number" value="2.5" step="0.1" id="c-dist">
+        </div>
+        <div class="field">
+          <label>Adjacent Area</label>
+          <select id="c-adj">
+            <option value="1">Controlled · T = 1.0</option>
+            <option value="0.5">Office · T = 1/2</option>
+            <option value="0.25">Corridor · T = 1/4</option>
+            <option value="0.0625">Public · T = 1/16</option>
+            <option value="0.025">Storage · T = 1/40</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Preferred Material</label>
+          <select id="c-mat">
+            <option value="pb">Lead Sheet</option>
+            <option value="conc">Concrete + Pb Hybrid</option>
+            <option value="bary">Barytes Plaster</option>
+            <option value="bpe">Pb + Borated PE</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Compliance Target</label>
+          <select id="c-tgt">
+            <option value="0.02">AERB · 0.02 mSv/wk</option>
+            <option value="0.1">NCRP-147 · Public</option>
+            <option value="0.4">Occupational · 0.4 mSv/wk</option>
+          </select>
+        </div>
+
+        <button class="btn primary" style="margin-top:24px;align-self:flex-start;background:var(--cyan);color:var(--ink-0);border-color:var(--cyan)">Recalculate <span class="arrow">→</span></button>
+      </div>
+
+      <!-- OUTPUT -->
+      <div class="calc-output">
+        <div class="rec-summary">
+          <div>
+            <div class="k">Recommended Pb-Equivalent</div>
+            <div class="v"><span id="c-pbeq">2.20</span> mm</div>
+          </div>
+          <div style="text-align:right">
+            <div class="k">Compliance Margin</div>
+            <div class="v" style="color:var(--ok)" id="c-margin">+34%</div>
+          </div>
+        </div>
+
+        <h4>Recommended Wall Stackup</h4>
+        <div class="wall-stack" id="wallStack">
+          <div class="layer">
+            <div class="sw" style="background:#7a8493"></div>
+            <div class="name">Gypsum Board · External</div>
+            <div class="thick">12 mm</div>
+          </div>
+          <div class="layer">
+            <div class="sw" style="background:#3a3f4a"></div>
+            <div class="name">Lead Sheet · Pb 99.9%</div>
+            <div class="thick">2.2 mm</div>
+          </div>
+          <div class="layer">
+            <div class="sw" style="background:#9b9eaa"></div>
+            <div class="name">Concrete Block · ρ 2.35</div>
+            <div class="thick">200 mm</div>
+          </div>
+          <div class="layer">
+            <div class="sw" style="background:#7a8493"></div>
+            <div class="name">Gypsum Board · Internal</div>
+            <div class="thick">12 mm</div>
+          </div>
+        </div>
+
+        <h4>Transmission Curve</h4>
+        <div class="attn-graph">
+          <svg viewBox="0 0 400 120" preserveAspectRatio="none" style="width:100%;height:100%">
+            <!-- grid -->
+            <g stroke="#4dd4e8" stroke-opacity="0.08" stroke-width="0.5">
+              <line x1="0" y1="30" x2="400" y2="30"/>
+              <line x1="0" y1="60" x2="400" y2="60"/>
+              <line x1="0" y1="90" x2="400" y2="90"/>
+              <line x1="100" y1="0" x2="100" y2="120"/>
+              <line x1="200" y1="0" x2="200" y2="120"/>
+              <line x1="300" y1="0" x2="300" y2="120"/>
+            </g>
+            <!-- baseline -->
+            <path id="attnCurve" d="M 0 10 Q 100 35 200 65 T 400 110" fill="none" stroke="#4dd4e8" stroke-width="1.5"/>
+            <path d="M 0 10 Q 100 35 200 65 T 400 110 L 400 120 L 0 120 Z" fill="url(#grad-attn)" opacity="0.2"/>
+            <defs>
+              <linearGradient id="grad-attn" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#4dd4e8" stop-opacity="0.4"/>
+                <stop offset="100%" stop-color="#4dd4e8" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <!-- target line -->
+            <line x1="0" y1="95" x2="400" y2="95" stroke="#5ee0a0" stroke-width="0.8" stroke-dasharray="3 3"/>
+            <text x="6" y="91" font-family="IBM Plex Mono" font-size="8" fill="#5ee0a0">TARGET · 0.02 mSv/wk</text>
+            <!-- y label -->
+            <text x="6" y="14" font-family="IBM Plex Mono" font-size="8" fill="#67768a">DOSE</text>
+            <text x="370" y="116" font-family="IBM Plex Mono" font-size="8" fill="#67768a">Pb mm →</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider" data-label="NEUTRON DOMAIN"></div>
+
+<!-- ============ PET/CT NEUTRON ============ -->
+<section class="section" id="neutron">
+  <div class="shell">
+    <div class="pet-wrap">
+      <div class="pet-text">
+        <div class="eyebrow"><span class="id">[05 / 11]</span><span>Neutron & Hybrid</span></div>
+        <h2 class="h-section">Where lead alone <em>isn't enough.</em></h2>
+        <p class="lede">Beyond ~10 MeV photons and in cyclotron environments, secondary neutrons dominate the radiation field. ALMATIN engineers layered composites — borated polyethylene, HDPE and high-density concrete — to attenuate the fast and thermal neutron spectrum together with their capture gammas.</p>
+
+        <ul class="feat-list" style="margin-top:24px">
+          <li>
+            <div class="marker">N · 01</div>
+            <div class="body">
+              <strong>Borated Polyethylene (5% B)</strong>
+              <span>Thermal neutron capture via ¹⁰B(n,α) — 150–250mm typical for proton therapy mazes.</span>
+            </div>
+          </li>
+          <li>
+            <div class="marker">N · 02</div>
+            <div class="body">
+              <strong>Maze Geometry & Direct Door Design</strong>
+              <span>Multi-leg maze attenuation analysis, NCRP-151 Kersey method, leakage-streaming corrections.</span>
+            </div>
+          </li>
+          <li>
+            <div class="marker">N · 03</div>
+            <div class="body">
+              <strong>Activation & Decay Modeling</strong>
+              <span>Concrete and air activation prediction · waste corridor design · post-shutdown survey plans.</span>
+            </div>
+          </li>
+          <li>
+            <div class="marker">N · 04</div>
+            <div class="body">
+              <strong>Hot Lab & Isotope Flow</strong>
+              <span>Dose calibrator enclosures, automated dispensing shields, F-18/Ga-68 transport pathways.</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- BUNKER STAGE -->
+      <div class="bunker-stage">
+        <div class="scan-line"></div>
+        <div class="viz-corners"><div class="tl"></div><div class="tr"></div><div class="bl"></div><div class="br"></div></div>
+
+        <div class="viz-readout tl"><span class="k">FACILITY</span><span class="v">CYC-18 · BNCT-READY</span></div>
+        <div class="viz-readout tr"><span class="k">FAST n FLUX</span><span class="v">3.2 × 10⁶ cm⁻² s⁻¹</span></div>
+        <div class="viz-readout br"><span class="k">DOOR DOSE</span><span class="v">0.6 μSv/hr</span></div>
+
+        <svg viewBox="0 0 500 460" preserveAspectRatio="xMidYMid meet" style="position:absolute;inset:0;width:100%;height:100%">
+          <defs>
+            <radialGradient id="cycCore" cx="0.5" cy="0.5" r="0.5">
+              <stop offset="0%" stop-color="#ff4d4d" stop-opacity="0.85"/>
+              <stop offset="50%" stop-color="#ff8a4c" stop-opacity="0.4"/>
+              <stop offset="100%" stop-color="#ffb84d" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+
+          <!-- Concrete bunker shell -->
+          <path d="M 40 60 L 460 60 L 460 400 L 280 400 L 280 280 L 180 280 L 180 400 L 40 400 Z" fill="#0c1118" stroke="#4dd4e8" stroke-opacity="0.6" stroke-width="1.2"/>
+
+          <!-- BPE inner layers -->
+          <path d="M 60 80 L 440 80 L 440 380 L 290 380 L 290 290 L 170 290 L 170 380 L 60 380 Z" fill="none" stroke="#5ee0a0" stroke-opacity="0.45" stroke-dasharray="2 3" stroke-width="0.8"/>
+          <path d="M 75 95 L 425 95 L 425 365 L 300 365 L 300 300 L 160 300 L 160 365 L 75 365 Z" fill="none" stroke="#5ee0a0" stroke-opacity="0.3" stroke-dasharray="1 2" stroke-width="0.6"/>
+
+          <!-- Cyclotron core -->
+          <g transform="translate(250,220)">
+            <circle cx="0" cy="0" r="80" fill="url(#cycCore)"/>
+            <circle cx="0" cy="0" r="55" fill="none" stroke="#ffb84d" stroke-width="0.8"/>
+            <circle cx="0" cy="0" r="35" fill="none" stroke="#ff8a4c" stroke-width="0.7"/>
+            <path d="M -35 0 L 35 0 M 0 -35 L 0 35" stroke="#ff4d4d" stroke-width="0.8"/>
+            <circle cx="0" cy="0" r="6" fill="#ff4d4d"/>
+            <text x="-22" y="-46" font-family="IBM Plex Mono" font-size="9" fill="#ffb84d">18 MeV p⁺</text>
+          </g>
+
+          <!-- Maze illustration -->
+          <g font-family="IBM Plex Mono" font-size="8" fill="#5ee0a0">
+            <text x="200" y="345" opacity="0.8">MAZE · LEG 1</text>
+            <text x="200" y="385" opacity="0.6">MAZE · LEG 2</text>
+            <!-- arrows -->
+            <path d="M 230 320 L 210 360 L 215 360" fill="none" stroke="#5ee0a0" stroke-width="0.6"/>
+            <path d="M 215 360 L 210 360 L 210 355" stroke="#5ee0a0" stroke-width="0.6" fill="none"/>
+          </g>
+
+          <!-- Door + readout -->
+          <g transform="translate(220,400)">
+            <rect x="-10" y="-4" width="40" height="8" fill="#1c2330" stroke="#5ee0a0" stroke-width="0.8"/>
+            <line x1="10" y1="-4" x2="10" y2="4" stroke="#5ee0a0" stroke-width="0.5" stroke-dasharray="1 1"/>
+          </g>
+          <text x="200" y="425" font-family="IBM Plex Mono" font-size="9" fill="#5ee0a0">DIRECT DOOR · BPE 200mm</text>
+
+          <!-- Neutron paths (animated) -->
+          <g class="neutron-paths" stroke="#ff8a4c" stroke-width="0.6" fill="none" opacity="0.5">
+            <path d="M 250 220 L 100 100" stroke-dasharray="2 4">
+              <animate attributeName="stroke-dashoffset" from="0" to="-30" dur="2s" repeatCount="indefinite"/>
+            </path>
+            <path d="M 250 220 L 400 100" stroke-dasharray="2 4">
+              <animate attributeName="stroke-dashoffset" from="0" to="-30" dur="2.3s" repeatCount="indefinite"/>
+            </path>
+            <path d="M 250 220 L 100 380" stroke-dasharray="2 4">
+              <animate attributeName="stroke-dashoffset" from="0" to="-30" dur="1.8s" repeatCount="indefinite"/>
+            </path>
+            <path d="M 250 220 L 400 380" stroke-dasharray="2 4">
+              <animate attributeName="stroke-dashoffset" from="0" to="-30" dur="2.1s" repeatCount="indefinite"/>
+            </path>
+            <path d="M 250 220 L 250 60" stroke-dasharray="2 4">
+              <animate attributeName="stroke-dashoffset" from="0" to="-30" dur="1.9s" repeatCount="indefinite"/>
+            </path>
+          </g>
+
+          <!-- Labels -->
+          <g font-family="IBM Plex Mono" font-size="8" fill="#4dd4e8" opacity="0.6">
+            <text x="50" y="74">CONCRETE · 1.6m</text>
+            <text x="50" y="180">BPE · 150mm</text>
+            <text x="50" y="195" opacity="0.6">+ HDPE · 100mm</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider" data-label="WORKFLOW + COMPLIANCE"></div>
+
+<!-- ============ WORKFLOW + COMPLIANCE ============ -->
+<section class="section" id="compliance">
+  <div class="shell">
+    <div class="eyebrow"><span class="id">[06 / 11]</span><span>Operational Engineering</span></div>
+    <h2 class="h-section">Shielding alone <em>doesn't run a suite.</em></h2>
+    <p class="lede" style="margin-top:24px">ALMATIN integrates radiation safety with surgical workflow, ergonomic planning and regulatory documentation — the suite arrives ready to operate, not just ready to clear inspection.</p>
+
+    <div class="wc-grid">
+      <!-- WORKFLOW -->
+      <div class="wc">
+        <div class="corner">[A]</div>
+        <div class="kicker">WORKFLOW OPTIMIZATION</div>
+        <h3>Movement, <em>not just walls.</em></h3>
+        <p>Patient flow, sterile zoning, scrub paths, anesthesia access, crash-cart corridors, control-room sightlines and cable routing — modeled into the shielding plan before drawings freeze.</p>
+
+        <div class="wc-viz">
+          <svg viewBox="0 0 500 200" preserveAspectRatio="xMidYMid meet">
+            <rect x="20" y="20" width="460" height="160" fill="none" stroke="#4dd4e8" stroke-opacity="0.4" stroke-width="0.8"/>
+            <rect x="40" y="40" width="200" height="120" fill="none" stroke="#4dd4e8" stroke-opacity="0.3" stroke-width="0.6" stroke-dasharray="2 2"/>
+            <rect x="260" y="40" width="120" height="60" fill="none" stroke="#4dd4e8" stroke-opacity="0.3" stroke-width="0.6"/>
+            <rect x="260" y="120" width="120" height="40" fill="none" stroke="#4dd4e8" stroke-opacity="0.3" stroke-width="0.6"/>
+            <text x="50" y="56" font-family="IBM Plex Mono" font-size="8" fill="#4dd4e8" opacity="0.7">CATH LAB</text>
+            <text x="270" y="56" font-family="IBM Plex Mono" font-size="8" fill="#4dd4e8" opacity="0.7">CONTROL</text>
+            <text x="270" y="136" font-family="IBM Plex Mono" font-size="8" fill="#4dd4e8" opacity="0.7">SCRUB</text>
+            <text x="400" y="56" font-family="IBM Plex Mono" font-size="8" fill="#4dd4e8" opacity="0.5">PREP</text>
+
+            <!-- patient path -->
+            <path d="M 410 180 L 410 100 L 140 100 L 140 60" fill="none" stroke="#5ee0a0" stroke-width="1.2" stroke-dasharray="4 3">
+              <animate attributeName="stroke-dashoffset" from="0" to="-21" dur="4s" repeatCount="indefinite"/>
+            </path>
+            <text x="410" y="190" font-family="IBM Plex Mono" font-size="8" fill="#5ee0a0">PATIENT</text>
+
+            <!-- staff path -->
+            <path d="M 320 140 L 320 100 L 240 100 L 140 100" fill="none" stroke="#4dd4e8" stroke-width="1" stroke-dasharray="3 3">
+              <animate attributeName="stroke-dashoffset" from="0" to="-18" dur="5s" repeatCount="indefinite"/>
+            </path>
+            <text x="320" y="175" font-family="IBM Plex Mono" font-size="8" fill="#4dd4e8">STAFF</text>
+          </svg>
+        </div>
+      </div>
+
+      <!-- COMPLIANCE -->
+      <div class="wc">
+        <div class="corner">[B]</div>
+        <div class="kicker">REGULATORY · QA</div>
+        <h3>Audit-ready <em>from day one.</em></h3>
+        <p>Layout approval, RPO documentation, post-installation surveys and quality-assurance binders prepared to AERB and IAEA expectations — handed over with the keys.</p>
+
+        <div class="wc-list">
+          <div class="item">
+            <div class="tick">✓</div>
+            <div class="doc">AERB Layout Approval Pack</div>
+            <div class="ref">FORM-RSD/CT/L</div>
+          </div>
+          <div class="item">
+            <div class="tick">✓</div>
+            <div class="doc">Shielding Design Report</div>
+            <div class="ref">NCRP-147</div>
+          </div>
+          <div class="item">
+            <div class="tick">✓</div>
+            <div class="doc">Post-Install Radiation Survey</div>
+            <div class="ref">IEC 61331</div>
+          </div>
+          <div class="item">
+            <div class="tick">✓</div>
+            <div class="doc">QA Validation Binder</div>
+            <div class="ref">IAEA TRS-457</div>
+          </div>
+          <div class="item">
+            <div class="tick">✓</div>
+            <div class="doc">RPO & Worker Dose Plan</div>
+            <div class="ref">ICRP-103</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider" data-label="DIGITAL TWIN INTELLIGENCE"></div>
+
+<!-- ============ DIGITAL TWIN / AI ============ -->
+<section class="section dt-section">
+  <div class="dt-bg"></div>
+  <div class="shell dt-content">
+    <div class="eyebrow"><span class="id">[07 / 11]</span><span>ALMATIN INTELLIGENCE™</span></div>
+    <h2 class="h-section">A digital twin that <em>learns the radiation field.</em></h2>
+    <p class="lede" style="margin-top:24px">Every ALMATIN-engineered suite is delivered with a live digital twin — a parametric model that predicts shielding behaviour as workload, equipment and clinical mix evolve over the life of the room.</p>
+
+    <div class="dt-stage">
+      <div class="scan-line"></div>
+      <div class="viz-corners"><div class="tl"></div><div class="tr"></div><div class="bl"></div><div class="br"></div></div>
+
+      <div class="viz-readout tl"><span class="k">TWIN ID</span><span class="v">ALM-TX-04217</span></div>
+      <div class="viz-readout tr"><span class="k">STATE</span><span class="v">CONVERGED · Δ 0.003</span></div>
+      <div class="viz-readout bl"><span class="k">SIMULATIONS / WK</span><span class="v">12,480</span></div>
+      <div class="viz-readout br"><span class="k">PREDICTION HORIZON</span><span class="v">+ 18 MONTHS</span></div>
+
+      <svg viewBox="0 0 1000 380" preserveAspectRatio="xMidYMid meet" style="position:absolute;inset:0;width:100%;height:100%">
+        <!-- multi-room twin grid -->
+        <g stroke="#4dd4e8" stroke-opacity="0.45" stroke-width="0.8" fill="none">
+          <rect x="60" y="80" width="180" height="220"/>
+          <rect x="260" y="80" width="180" height="220"/>
+          <rect x="460" y="80" width="180" height="220"/>
+          <rect x="660" y="80" width="280" height="220"/>
+        </g>
+
+        <!-- per-room state -->
+        <g font-family="IBM Plex Mono" font-size="9" fill="#4dd4e8" opacity="0.7">
+          <text x="68" y="98">CATH-01</text>
+          <text x="68" y="290">0.08 mR/hr</text>
+          <text x="268" y="98">CATH-02</text>
+          <text x="268" y="290">0.06 mR/hr</text>
+          <text x="468" y="98">CT-01</text>
+          <text x="468" y="290">0.04 mR/hr</text>
+          <text x="668" y="98">PET/CT · HOTLAB</text>
+          <text x="668" y="290">0.09 mR/hr</text>
+        </g>
+
+        <!-- heat fills -->
+        <ellipse cx="150" cy="190" rx="70" ry="50" fill="#ff8a4c" fill-opacity="0.18"/>
+        <ellipse cx="350" cy="190" rx="60" ry="45" fill="#ff8a4c" fill-opacity="0.14"/>
+        <ellipse cx="550" cy="190" rx="50" ry="38" fill="#ffb84d" fill-opacity="0.12"/>
+        <ellipse cx="800" cy="190" rx="100" ry="60" fill="#ff8a4c" fill-opacity="0.2"/>
+        <circle cx="800" cy="190" r="22" fill="#ff4d4d" fill-opacity="0.5"/>
+
+        <!-- data lines between rooms -->
+        <g stroke="#4dd4e8" stroke-opacity="0.4" stroke-width="0.7" fill="none">
+          <path d="M 240 190 L 260 190" stroke-dasharray="2 2"/>
+          <path d="M 440 190 L 460 190" stroke-dasharray="2 2"/>
+          <path d="M 640 190 L 660 190" stroke-dasharray="2 2"/>
+        </g>
+
+        <!-- top axis -->
+        <g font-family="IBM Plex Mono" font-size="9" fill="#67768a">
+          <text x="60" y="60">CARDIOVASCULAR WING · FLOOR 3 · LIVE TWIN</text>
+          <text x="60" y="340" opacity="0.6">PREDICTED DRIFT OVER 18 MO: +4.2% workload → no breach</text>
+        </g>
+
+        <!-- side prediction graph -->
+        <g transform="translate(60,355)" font-family="IBM Plex Mono" font-size="8" fill="#67768a">
+          <line x1="0" y1="0" x2="880" y2="0" stroke="#67768a" stroke-opacity="0.3" stroke-width="0.5"/>
+          <g fill="#5ee0a0">
+            <circle cx="0" cy="0" r="2"/>
+            <circle cx="220" cy="-3" r="2"/>
+            <circle cx="440" cy="-2" r="2"/>
+            <circle cx="660" cy="-5" r="2"/>
+            <circle cx="880" cy="-8" r="2"/>
+          </g>
+          <path d="M 0 0 L 220 -3 L 440 -2 L 660 -5 L 880 -8" stroke="#5ee0a0" stroke-width="0.8" fill="none"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="dt-features">
+      <div class="dt-feat">
+        <div class="n">[i]</div>
+        <h4>Predictive Drift</h4>
+        <p>Forecasts shielding margin as workload, kVp profile and clinical mix evolve.</p>
+      </div>
+      <div class="dt-feat">
+        <div class="n">[ii]</div>
+        <h4>Scatter ML</h4>
+        <p>Neural scatter solver trained on 1.2M Monte Carlo runs — 800× faster than MCNP.</p>
+      </div>
+      <div class="dt-feat">
+        <div class="n">[iii]</div>
+        <h4>Upgrade Sandbox</h4>
+        <p>Stress-test new modalities (CTA, EP, BMV-TAVR) before procurement.</p>
+      </div>
+      <div class="dt-feat">
+        <div class="n">[iv]</div>
+        <h4>Compliance Watch</h4>
+        <p>Live AERB margin tracker — alerts if 30-day workload trend approaches limits.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider" data-label="SUBMIT YOUR ROOM"></div>
+
+<!-- ============ UPLOAD ============ -->
+<section class="section" id="upload">
+  <div class="shell">
+    <div class="eyebrow"><span class="id">[08 / 11]</span><span>Drawing Intake</span></div>
+    <h2 class="h-section">Upload your layout. <em>Get a preliminary read in 6 hours.</em></h2>
+    <p class="lede" style="margin-top:24px">Drop your Cath Lab, CT or PET/CT floor plan — we'll return a preliminary leakage heatmap, shielding stack and AERB submission gap analysis at no cost.</p>
+
+    <div class="upload-wrap">
+      <div class="dropzone" id="dropzone">
+        <div class="icon">
+          <svg viewBox="0 0 64 64">
+            <rect x="14" y="10" width="36" height="46" rx="1"/>
+            <line x1="22" y1="22" x2="42" y2="22"/>
+            <line x1="22" y1="30" x2="42" y2="30"/>
+            <line x1="22" y1="38" x2="34" y2="38"/>
+            <circle cx="42" cy="42" r="10" stroke-dasharray="2 2"/>
+            <path d="M 42 38 L 42 46 M 38 42 L 46 42"/>
+          </svg>
+        </div>
+        <div class="ttl">Drop your <em>room drawing</em> here</div>
+        <div class="sub">Or click to browse. ALMATIN's intake engine performs preliminary scatter analysis and returns a sealed engineering brief within one business day.</div>
+        <div class="formats">
+          <span>DWG</span><span>DXF</span><span>PDF</span><span>RVT</span><span>IFC</span><span>DICOM RT</span>
+        </div>
+      </div>
+
+      <div class="upload-state" id="uploadState">
+        <div class="kicker" style="margin-bottom:12px">SECURE INGESTION · TLS 1.3</div>
+        <div style="font-size:22px;font-weight:300" id="uploadTitle">Analyzing geometry · CT-2024-PRELIM.dwg</div>
+        <div class="progress"><div class="bar" id="uploadBar"></div></div>
+        <div class="scan-results" id="scanResults">
+          <div class="row"><span class="k">Detected Modality</span><span class="v">Cath Lab · Type-B</span></div>
+          <div class="row"><span class="k">Room Volume</span><span class="v">68.4 m³</span></div>
+          <div class="row"><span class="k">Adjacency Risk</span><span class="v" style="color:var(--warn)">Medium · Public Corridor East</span></div>
+          <div class="row"><span class="k">Preliminary Pb-Eq</span><span class="v">2.4 mm</span></div>
+          <div class="row"><span class="k">Engineering Brief ETA</span><span class="v" style="color:var(--ok)">6 HOURS</span></div>
+          <div style="margin-top:24px;text-align:center"><button class="btn">Receive Full Engineering Brief <span class="arrow">→</span></button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="shell">
+    <div class="foot-top">
+      <div class="foot-brand">
+        <div class="logo">
+          <div class="logo-mark">
+            <svg viewBox="0 0 32 32" fill="none">
+              <circle cx="16" cy="16" r="14" stroke="#4dd4e8" stroke-width="0.8"/>
+              <circle cx="16" cy="16" r="9" stroke="#4dd4e8" stroke-width="0.8" opacity="0.5"/>
+              <circle cx="16" cy="16" r="4" fill="#4dd4e8" opacity="0.9"/>
+              <path d="M16 2 L16 8 M16 24 L16 30 M2 16 L8 16 M24 16 L30 16" stroke="#4dd4e8" stroke-width="0.8"/>
+            </svg>
+          </div>
+          <div>
+            <div class="logo-text">ALMATIN</div>
+            <div class="logo-sub">RADIATION INFRASTRUCTURE</div>
+          </div>
+        </div>
+        <p>India's radiation infrastructure engineering and simulation company — designing shielded medical environments for Cath Labs, PET/CT, cyclotrons and BNCT facilities.</p>
+        <div class="status-pill"><span class="dot"></span>ACCEPTING Q1 2026 ENGAGEMENTS</div>
+      </div>
+
+      <div class="foot-col">
+        <h5>Domains</h5>
+        <ul>
+          <li><a href="#">Cath Lab</a></li>
+          <li><a href="#">PET/CT Suites</a></li>
+          <li><a href="#">Cyclotron Bunkers</a></li>
+          <li><a href="#">Hybrid Neutron-γ</a></li>
+          <li><a href="#">Linac Vaults</a></li>
+        </ul>
+      </div>
+
+      <div class="foot-col">
+        <h5>Capability</h5>
+        <ul>
+          <li><a href="#sim">Simulation Engine</a></li>
+          <li><a href="#calculator">Shielding Calculator</a></li>
+          <li><a href="#cases">Project Evidence</a></li>
+          <li><a href="#">Digital Twin</a></li>
+          <li><a href="#compliance">Compliance Stack</a></li>
+        </ul>
+      </div>
+
+      <div class="foot-col">
+        <h5>Contact</h5>
+        <ul>
+          <li><a href="#">engineering@almatin.io</a></li>
+          <li><a href="#">+91 80 4567 8900</a></li>
+          <li><a href="#">Bengaluru · Delhi · Dubai</a></li>
+          <li><a href="#upload">Submit Drawing</a></li>
+          <li><a href="#">Press · Partnerships</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="foot-cert">
+      <div class="group">
+        <span class="cert">AERB CERTIFIED CONSULTANT</span>
+        <span class="cert">ISO 9001:2015</span>
+        <span class="cert">NCRP REFERENCE COMPLIANT</span>
+        <span class="cert">IAEA TRS-457</span>
+        <span class="cert">IEC 61331-1/2/3</span>
+      </div>
+      <div class="kicker">14 OEM PARTNERS</div>
+    </div>
+
+    <div class="foot-meta">
+      <span>© 2026 ALMATIN ENGINEERING PVT. LTD.</span>
+      <span>BUILD · 2026.05.r3 · ENGINEERING INTEGRITY VERIFIED</span>
+      <span>LAT 12.9716° N · LON 77.5946° E</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ============== HERO PARTICLE SCATTER ============== */
+(function(){
+  const cv = document.getElementById('scatterCanvas');
+  if(!cv) return;
+  const ctx = cv.getContext('2d');
+  let W=0,H=0,parts=[],dpr=Math.min(window.devicePixelRatio||1,2);
+  function fit(){
+    const r = cv.getBoundingClientRect();
+    cv.width = r.width*dpr; cv.height = r.height*dpr;
+    W = r.width; H = r.height;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  fit(); window.addEventListener('resize',fit);
+
+  function spawn(){
+    // emit from source location (approx 50% x, 30% y in viz)
+    const sx = W*0.5, sy = H*0.34;
+    const angle = (Math.random()-0.5)*Math.PI*0.85 + Math.PI/2; // downward cone
+    const speed = 0.6 + Math.random()*0.9;
+    parts.push({
+      x:sx,y:sy,
+      vx:Math.cos(angle)*speed,
+      vy:Math.sin(angle)*speed,
+      life:0,
+      max: 120+Math.random()*80,
+      scatter: Math.random()<0.5,
+      color: Math.random()<0.6 ? '255,184,77' : '255,138,76'
+    });
+  }
+
+  function step(){
+    ctx.clearRect(0,0,W,H);
+    if(Math.random()<0.7) spawn();
+    if(Math.random()<0.3) spawn();
+    for(let i=parts.length-1;i>=0;i--){
+      const p = parts[i];
+      // chance to scatter
+      if(p.scatter && p.life>20 && Math.random()<0.015){
+        const a = Math.random()*Math.PI*2;
+        const s = Math.hypot(p.vx,p.vy)*0.75;
+        p.vx = Math.cos(a)*s; p.vy = Math.sin(a)*s;
+      }
+      // attenuation near edges (shielding boundary)
+      const margin = 22;
+      if(p.x < margin || p.x > W-margin || p.y < margin || p.y > H-margin){
+        p.life += 4; // accelerated decay at wall
+      }
+      p.x += p.vx; p.y += p.vy; p.life++;
+      const t = 1 - p.life/p.max;
+      if(t<=0 || p.x<-10 || p.x>W+10 || p.y<-10 || p.y>H+10){
+        parts.splice(i,1); continue;
+      }
+      // draw
+      ctx.fillStyle = `rgba(${p.color},${0.7*t})`;
+      ctx.fillRect(p.x-0.6, p.y-0.6, 1.4, 1.4);
+      // streak
+      ctx.strokeStyle = `rgba(${p.color},${0.25*t})`;
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(p.x,p.y);
+      ctx.lineTo(p.x-p.vx*4, p.y-p.vy*4);
+      ctx.stroke();
+    }
+    requestAnimationFrame(step);
+  }
+  step();
+})();
+
+/* ============== SIMULATION ENGINE ============== */
+(function(){
+  const kvp = document.getElementById('i-kvp');
+  const wl  = document.getElementById('i-wl');
+  const occ = document.getElementById('i-occ');
+  const pb  = document.getElementById('i-pb');
+  const vKvp = document.getElementById('v-kvp');
+  const vWl  = document.getElementById('v-wl');
+  const vOcc = document.getElementById('v-occ');
+  const vPb  = document.getElementById('v-pb');
+  const oLeak = document.getElementById('o-leak');
+  const oDose = document.getElementById('o-dose');
+  const oAtt  = document.getElementById('o-att');
+  const oPbeq = document.getElementById('o-pbeq');
+  const oLeakD= document.getElementById('o-leak-d');
+  const badge = document.getElementById('comp-badge');
+  const heroLeak = document.getElementById('hero-leak');
+  const primHeat = document.getElementById('primaryHeat');
+  const secHeat  = document.getElementById('secondaryHeat');
+  const mp1v = document.getElementById('mp1-v');
+  const mp2v = document.getElementById('mp2-v');
+  const mp3v = document.getElementById('mp3-v');
+  const mp4v = document.getElementById('mp4-v');
+  let mode = 'pb';
+
+  function recalc(){
+    const k = +kvp.value;       // 70..125
+    const w = +wl.value;        // 50..800
+    const o = +occ.value/100;   // 0.01..1
+    const pbmm = +pb.value/10;  // 0.5..4.0
+    vKvp.textContent = k;
+    vWl.textContent = w;
+    vOcc.textContent = o.toFixed(2);
+    vPb.textContent = pbmm.toFixed(1);
+
+    // simplified barrier transmission B = K·W·U·T / (P·d²) with HVL model
+    // HVL_Pb at 100kVp ≈ 0.27mm; we scale roughly with kVp
+    const hvl = 0.18 + (k-70)*0.0035;     // mm Pb
+    let nHVL = pbmm / hvl;
+    // mode adjustments
+    if(mode==='bpe') nHVL += 0.4;
+    if(mode==='hdpe') nHVL += 0.6;
+    if(mode==='hybrid') nHVL += 1.1;
+    const transmission = Math.pow(0.5, nHVL); // fraction passing
+    // baseline scatter at 1m, 100kVp, 400mA·min/wk ≈ ~6 mR/hr unshielded
+    const base = 6.0 * (w/400) * Math.pow(k/100, 2.3);
+    const leak = base * transmission;
+    const dose = leak * o * 0.01 * 50; // weekly hrs estimate → mSv/yr ish
+    const att = (1 - transmission) * 100;
+    const pbeq = pbmm;
+
+    oLeak.textContent = leak.toFixed(2);
+    oDose.textContent = dose.toFixed(2);
+    oAtt.textContent  = att.toFixed(2);
+    oPbeq.textContent = pbeq.toFixed(1);
+    const reduction = (1 - leak/base) * 100;
+    oLeakD.textContent = `−${reduction.toFixed(1)}% vs unshielded`;
+
+    if(heroLeak) heroLeak.textContent = leak.toFixed(2) + ' mR/hr';
+
+    // heatmap intensity scales with leak vs base
+    const intensity = Math.min(1, leak/4.0);
+    if(primHeat){
+      primHeat.setAttribute('opacity', (0.4 + intensity*0.5).toFixed(2));
+      primHeat.setAttribute('rx', 160 + intensity*70);
+      primHeat.setAttribute('ry', 110 + intensity*50);
+    }
+    if(secHeat){
+      secHeat.setAttribute('opacity', (0.2 + intensity*0.5).toFixed(2));
+    }
+    // measurement point updates
+    if(mp1v) mp1v.textContent = `P1 · ${(leak*1.5).toFixed(2)} mR/hr`;
+    if(mp2v) mp2v.textContent = `P2 · ${(leak*1.1).toFixed(2)} mR/hr`;
+    if(mp3v) mp3v.textContent = `P3 · ${(leak*0.4).toFixed(2)} mR/hr`;
+    if(mp4v) mp4v.textContent = `P4 · ${(leak*0.9).toFixed(2)} mR/hr`;
+
+    // compliance
+    badge.classList.remove('warn','fail');
+    let txt = 'AERB Compliant';
+    if(leak > 0.25){ badge.classList.add('warn'); txt = 'Margin Warning'; }
+    if(leak > 0.6){ badge.classList.remove('warn'); badge.classList.add('fail'); txt = 'Non-Compliant'; }
+    badge.innerHTML = '<span class="dot"></span>'+txt;
+  }
+
+  [kvp,wl,occ,pb].forEach(el=> el && el.addEventListener('input', recalc));
+
+  document.querySelectorAll('.toggle').forEach(b=>{
+    b.addEventListener('click',()=>{
+      document.querySelectorAll('.toggle').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on');
+      mode = b.dataset.mode;
+      recalc();
+    });
+  });
+
+  recalc();
+})();
+
+/* ============== BEFORE/AFTER SLIDERS ============== */
+(function(){
+  document.querySelectorAll('.case-viz').forEach(viz=>{
+    const line = viz.querySelector('.ab-line');
+    const id = viz.dataset.case;
+    const clipL = viz.querySelector(`#clipL${id}r`);
+    const clipR = viz.querySelector(`#clipR${id}r`);
+    let dragging = false;
+
+    function move(clientX){
+      const r = viz.getBoundingClientRect();
+      const pct = Math.max(5, Math.min(95, ((clientX - r.left)/r.width)*100));
+      line.style.left = pct+'%';
+      if(clipL) clipL.setAttribute('width', (pct/100)*360);
+      if(clipR){
+        clipR.setAttribute('x', (pct/100)*360);
+        clipR.setAttribute('width', 360 - (pct/100)*360);
+      }
+    }
+    line.addEventListener('mousedown',e=>{dragging=true;e.preventDefault()});
+    viz.addEventListener('mousemove',e=>{if(dragging) move(e.clientX)});
+    document.addEventListener('mouseup',()=>dragging=false);
+    line.addEventListener('touchstart',e=>{dragging=true});
+    viz.addEventListener('touchmove',e=>{if(dragging && e.touches[0]) move(e.touches[0].clientX)});
+    document.addEventListener('touchend',()=>dragging=false);
+    // hover to drag without explicit grab
+    viz.addEventListener('mousemove',e=>{
+      if(!dragging){
+        const r = viz.getBoundingClientRect();
+        const overHandle = Math.abs(e.clientX - r.left - (parseFloat(line.style.left)/100*r.width)) < 60;
+        if(overHandle) move(e.clientX);
+      }
+    });
+  });
+})();
+
+/* ============== CALCULATOR ============== */
+(function(){
+  const machine = document.getElementById('c-machine');
+  const wl = document.getElementById('c-wl');
+  const kvp = document.getElementById('c-kvp');
+  const dist = document.getElementById('c-dist');
+  const adj = document.getElementById('c-adj');
+  const mat = document.getElementById('c-mat');
+  const tgt = document.getElementById('c-tgt');
+  const pbOut = document.getElementById('c-pbeq');
+  const marginOut = document.getElementById('c-margin');
+  const wallStack = document.getElementById('wallStack');
+  const curve = document.getElementById('attnCurve');
+
+  function compute(){
+    const w = +wl.value;
+    const k = +kvp.value;
+    const d = +dist.value;
+    const t = +adj.value;
+    const target = +tgt.value;
+    const m = machine.value;
+
+    // rough Pb-eq formula
+    let pb = (w/400) * Math.pow(k/100,1.6) * Math.sqrt(t) / Math.max(1, d*d) * 2.4;
+    if(m==='pet') pb *= 1.8;
+    if(m==='cyc') pb *= 0.7; // pb less effective vs neutrons → relative
+    if(m==='lin') pb *= 2.1;
+    pb = Math.max(0.5, Math.min(8, pb));
+
+    pbOut.textContent = pb.toFixed(2);
+    // margin
+    const margin = ((1/target)*0.02 - pb) / pb * 100;
+    marginOut.textContent = (margin>0?'+':'') + margin.toFixed(0) + '%';
+    marginOut.style.color = margin>0 ? 'var(--ok)' : 'var(--hot)';
+
+    // wall stack rebuild
+    let layers = [];
+    if(mat.value==='pb'){
+      layers = [
+        {n:'Gypsum Board · External',t:'12 mm',c:'#7a8493'},
+        {n:'Lead Sheet · Pb 99.9%',t:pb.toFixed(2)+' mm',c:'#3a3f4a'},
+        {n:'MS Backing Frame',t:'1.6 mm',c:'#4a4f5a'},
+        {n:'Gypsum Board · Internal',t:'12 mm',c:'#7a8493'},
+      ];
+    } else if(mat.value==='conc'){
+      layers = [
+        {n:'Gypsum Board · External',t:'12 mm',c:'#7a8493'},
+        {n:'Lead Sheet · Pb 99.9%',t:(pb*0.6).toFixed(2)+' mm',c:'#3a3f4a'},
+        {n:'High-Density Concrete · ρ 3.5',t:(120+pb*40).toFixed(0)+' mm',c:'#9b9eaa'},
+        {n:'Gypsum Board · Internal',t:'12 mm',c:'#7a8493'},
+      ];
+    } else if(mat.value==='bary'){
+      layers = [
+        {n:'Gypsum Board · External',t:'12 mm',c:'#7a8493'},
+        {n:'Barytes Plaster · BaSO₄',t:(20+pb*8).toFixed(0)+' mm',c:'#c1b289'},
+        {n:'Lead Sheet · Pb 99.9%',t:(pb*0.4).toFixed(2)+' mm',c:'#3a3f4a'},
+        {n:'Gypsum Board · Internal',t:'12 mm',c:'#7a8493'},
+      ];
+    } else { // bpe
+      layers = [
+        {n:'Gypsum Board · External',t:'12 mm',c:'#7a8493'},
+        {n:'Lead Sheet · Pb 99.9%',t:pb.toFixed(2)+' mm',c:'#3a3f4a'},
+        {n:'Borated Polyethylene · 5% B',t:'150 mm',c:'#5a7a6a'},
+        {n:'HDPE Liner',t:'40 mm',c:'#6b8a7a'},
+        {n:'Gypsum Board · Internal',t:'12 mm',c:'#7a8493'},
+      ];
+    }
+    wallStack.innerHTML = layers.map(l =>
+      `<div class="layer"><div class="sw" style="background:${l.c}"></div><div class="name">${l.n}</div><div class="thick">${l.t}</div></div>`
+    ).join('');
+
+    // curve update: steeper with more Pb
+    const steep = 0.5 + pb*0.4;
+    const dPath = `M 0 10 Q 100 ${30+steep*5} 200 ${50+steep*8} T 400 ${100+Math.min(15,steep*5)}`;
+    curve.setAttribute('d', dPath);
+  }
+
+  [machine,wl,kvp,dist,adj,mat,tgt].forEach(el=> el && el.addEventListener('input',compute));
+  compute();
+})();
+
+/* ============== UPLOAD INTERACTION ============== */
+(function(){
+  const dz = document.getElementById('dropzone');
+  const state = document.getElementById('uploadState');
+  const bar = document.getElementById('uploadBar');
+  const results = document.getElementById('scanResults');
+  if(!dz) return;
+
+  function trigger(){
+    dz.style.display = 'none';
+    state.classList.add('show');
+    let p = 0;
+    const iv = setInterval(()=>{
+      p += 2 + Math.random()*4;
+      if(p>=100){ p=100; clearInterval(iv); setTimeout(()=>results.classList.add('show'), 350); }
+      bar.style.width = p+'%';
+    }, 90);
+  }
+  ['dragenter','dragover'].forEach(e=>dz.addEventListener(e,ev=>{ev.preventDefault();dz.classList.add('drag')}));
+  ['dragleave','drop'].forEach(e=>dz.addEventListener(e,ev=>{ev.preventDefault();dz.classList.remove('drag')}));
+  dz.addEventListener('drop',trigger);
+  dz.addEventListener('click',trigger);
+})();
+
+/* ============== REVEAL ON SCROLL ============== */
+(function(){
+  const els = document.querySelectorAll('.reveal');
+  if(!('IntersectionObserver' in window) || els.length===0) return;
+  const io = new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  },{threshold:0.15});
+  els.forEach(el=>io.observe(el));
+})();
+</script>
+</body>
+</html>
